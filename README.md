@@ -3,7 +3,7 @@
 An interactive, widget-driven framework for end-to-end machine learning model validation —
 built for risk and compliance practitioners, data scientists, and ML engineers.
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/minw0607/ml-model-validation/blob/main/notebooks/ML_Model_Validation.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/minw0607/ml_validation_framework/blob/main/notebooks/ML_Model_Validation.ipynb)
 
 ---
 
@@ -42,8 +42,8 @@ No API keys or local setup required.
 ## Local Setup
 
 ```bash
-git clone https://github.com/minw0607/ml-model-validation.git
-cd ml-model-validation
+git clone https://github.com/minw0607/ml_validation_framework.git
+cd ml_validation_framework
 pip install -r requirements.txt
 jupyter notebook notebooks/ML_Model_Validation.ipynb
 ```
@@ -71,7 +71,7 @@ You can also upload any CSV file directly via the **Upload CSV** option.
 ## Repo Structure
 
 ```
-ml-model-validation/
+ml_validation_framework/
 ├── notebooks/
 │   └── ML_Model_Validation.ipynb   # lightweight demo notebook (import + run)
 ├── src/
