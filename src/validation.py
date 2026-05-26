@@ -679,9 +679,10 @@ class ValidationFramework:
       ])
 
       # ── Display sections (widgets.Tab is unreliable in Colab) ────────
-      display(HTML(_section('🔧', 'Data Imputation',   '#1a73e8', '#e8f0fe')))
+      S = self._section
+      display(HTML(S('🔧', 'Data Imputation',   '#1a73e8', '#e8f0fe')))
       display(impute_widget)
-      display(HTML(_section('📐', 'Data Normalization', '#34a853', '#e6f4ea')))
+      display(HTML(S('📐', 'Data Normalization', '#34a853', '#e6f4ea')))
       display(norm_widget)
 
     except Exception as _e:
