@@ -38,7 +38,7 @@ from sklearn.calibration import calibration_curve
 from sklearn.cluster import KMeans
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline, make_pipeline
-from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor, plot_tree
 from sklearn import tree
 from sklearn.metrics import (accuracy_score, roc_auc_score, f1_score,
                               mean_squared_error, mean_absolute_error, r2_score,
@@ -62,6 +62,12 @@ try:
     LGBM_AVAILABLE = True
 except ImportError:
     LGBM_AVAILABLE = False
+
+try:
+    from xgboost import XGBClassifier, XGBRegressor
+    XGB_AVAILABLE = True
+except ImportError:
+    XGB_AVAILABLE = False
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -1333,74 +1339,88 @@ class ValidationFramework:
     params_log = {
         'C': 1.0,
         'penalty': 'l2',
-        'solver': 'lbfgs'
-          }
+        'solver': 'lbfgs',
+        'class_weight': 'balanced',  # handles class imbalance (prevents all-zero predictions)
+        'max_iter': 1000,
+    }
     params_rf = {
         'n_estimators': 100,
         'max_depth': 5,
-        'random_state': 42
+        'random_state': 42,
     }
     params_gbm = {
         'n_estimators': 100,
         'learning_rate': 0.1,
         'max_depth': 5,
-        'random_state': 42
+        'random_state': 42,
     }
     params_lgbm = {
         'boosting_type': 'gbdt',
-        #'objective': 'regression',
-        #'metric': 'binary_logloss',
-        'n_estimators': 100, # Number of boosted trees to fit.
-        'num_leaves': 31, # Maximum tree leaves for base learners
-        'max_depth': -1, # Maximum tree depth for base learners, <=0 means no limit.
+        'n_estimators': 100,
+        'num_leaves': 31,
+        'max_depth': -1,
         'learning_rate': 0.1,
-        'reg_alpha': 0.0, # L1 regularization term on weights
-        'reg_lambda': 0.0, # L2 regularization term on weights.
-        'random_state': 42
-        #'feature_fraction': 0.9
+        'reg_alpha': 0.0,
+        'reg_lambda': 0.0,
+        'random_state': 42,
+    }
+    params_xgb = {
+        'n_estimators': 100,
+        'max_depth': 6,
+        'learning_rate': 0.1,
+        'subsample': 0.8,
+        'colsample_bytree': 0.8,
+        'reg_alpha': 0.0,
+        'reg_lambda': 1.0,
+        'random_state': 42,
+    }
+    params_dt = {
+        'max_depth': 5,
+        'min_samples_split': 20,
+        'random_state': 42,
     }
     param_mlp = {
-          'hidden_layer_sizes': (100,), #array-like of shape of the NN
-          'max_iter': 200, #Maximum number of iterations with the solver
-          'activation': 'relu', #Activation function for the hidden layer
-          'solver': 'adam',  #The solver for weight optimization
-          'alpha': 0.0001   #Strength of the L2 regularization term
-          }
+        'hidden_layer_sizes': (100,),
+        'max_iter': 200,
+        'activation': 'relu',
+        'solver': 'adam',
+        'alpha': 0.0001,
+    }
 
     if task == 'classification':
-      # Define models for classification task
       models = {
-        'Logistic Regression': LogisticRegression(**params_log),
-        'Random Forest': RandomForestClassifier(**params_rf),
-        'GBM': GradientBoostingClassifier(**params_gbm),
-        **({'LightGBM': lgb.LGBMClassifier(**params_lgbm)} if LGBM_AVAILABLE else {}),
-        'Multi-layer Neural Network': MLPClassifier(**param_mlp),
-                }
-      # Define metrics for classification task
+        'Logistic Regression':  LogisticRegression(**params_log),
+        'Decision Tree':        DecisionTreeClassifier(**params_dt, criterion='gini'),
+        'Random Forest':        RandomForestClassifier(**params_rf),
+        'GBM':                  GradientBoostingClassifier(**params_gbm),
+        **({'LightGBM':  LGBMClassifier(**params_lgbm)} if LGBM_AVAILABLE else {}),
+        **({'XGBoost':   XGBClassifier(**params_xgb, eval_metric='logloss',
+                                       verbosity=0)} if XGB_AVAILABLE else {}),
+        'MLP':                  MLPClassifier(**param_mlp),
+      }
       metrics = {
-        'AUC': roc_auc_score,
-        #'MSE': mean_squared_error,
-        'Accuracy': accuracy_score,
-        'Precision': precision_score,
-        'Recall': recall_score,
-        'F1 Score': f1_score,
-                }
-    elif task == "regression":
-      # Define your models for regression task
+        'AUC':       roc_auc_score,
+        'Accuracy':  accuracy_score,
+        'Precision': lambda y, yh: precision_score(y, yh, zero_division=0),
+        'Recall':    lambda y, yh: recall_score(y, yh, zero_division=0),
+        'F1 Score':  lambda y, yh: f1_score(y, yh, zero_division=0),
+      }
+    elif task == 'regression':
       models = {
-        'logistic Regression': LogisticRegression(**params_log),
-        'Random Forest': RandomForestRegressor(**params_rf),
-        'GBM': GradientBoostingRegressor(**params_gbm),
-        **({'LightGBM': LGBMRegressor(**params_lgbm)} if LGBM_AVAILABLE else {}),
-        'Multi-layer Neural Network': MLPRegressor(**param_mlp)
-          }
-      # Define metrics for regression task
+        'Linear Regression':    LinearRegression(),
+        'Decision Tree':        DecisionTreeRegressor(**params_dt, criterion='squared_error'),
+        'Random Forest':        RandomForestRegressor(**params_rf),
+        'GBM':                  GradientBoostingRegressor(**params_gbm),
+        **({'LightGBM':  LGBMRegressor(**params_lgbm)} if LGBM_AVAILABLE else {}),
+        **({'XGBoost':   XGBRegressor(**params_xgb, verbosity=0)} if XGB_AVAILABLE else {}),
+        'MLP':                  MLPRegressor(**param_mlp),
+      }
       metrics = {
-        'MSE': mean_squared_error,
-        'RMSE': lambda y_true, y_pred: sqrt(mean_squared_error(y_true, y_pred)),
-        'MAE': mean_absolute_error,
-        'R-Squared': r2_score
-          }
+        'MSE':       mean_squared_error,
+        'RMSE':      lambda y_true, y_pred: sqrt(mean_squared_error(y_true, y_pred)),
+        'MAE':       mean_absolute_error,
+        'R-Squared': r2_score,
+      }
 
     output = widgets.Output()
 
@@ -1425,11 +1445,9 @@ class ValidationFramework:
         for name, model in models.items():
             if name in selected_models:
               param = {key: item.value for key, item in hyperparameters[name].items()}
-              if name == 'Multi-layer Neural Network':
+              if name == 'MLP':
                 def convert_to_tuple(text_input):
-                  # Helper function to convert a string of comma-separated numbers to a tuple of integers"""
-                  return tuple(int(size) for size in text_input.split(',') if size)
-
+                  return tuple(int(s) for s in text_input.split(',') if s.strip())
                 param['hidden_layer_sizes'] = convert_to_tuple(param['hidden_layer_sizes'])
 
               model.set_params(**param)
@@ -1505,10 +1523,10 @@ class ValidationFramework:
         #display(*hyperparameters_inputs[model_name].values())
         config = hyperparameters_inputs[model_name]
 
-        if model_name == "Multi-layer Neural Network":
-          config_section.children = [widgets.Label(value=model_name + ':')] +\
-          [widgets.Label('For hidden layer sizes, enter comma-separated values for hidden layer sizes. Ex: 100,200,300 for 3 layers')]+\
-                                  list(config.values())
+        if model_name == 'MLP':
+          config_section.children = [widgets.Label(value=model_name + ':')] + \
+            [widgets.Label('Hidden layers: comma-separated sizes, e.g. 100,50 for two layers')] + \
+            list(config.values())
         else:
           config_section.children = [widgets.Label(value=model_name + ':')] +\
                                   list(config.values())
@@ -1523,22 +1541,24 @@ class ValidationFramework:
     for name in models.keys():
         # Define hyperparameter fields for each model
         if name == 'Logistic Regression':
-          #Warning The choice of the algorithm depends on the penalty chosen. Supported penalties by solver:
-          #  'lbfgs' - ['l2', None]
-          #  'liblinear' - ['l1', 'l2']
-          #  'newton-cg' - ['l2', None]
-          #  'newton-cholesky' - ['l2', None]
-          #  'sag' - ['l2', None]
-          #  'saga' - ['elasticnet', 'l1', 'l2', None]
             hyperparameters_fields = {
-                'C': widgets.FloatText(description='C',
-                                      value=1.0), #Inverse of regularization strength
-                'penalty': widgets.Dropdown(description='Penalty',
-                                            options=[None, 'l1', 'l2'],
-                                            value='l2'), #norm of the penalty
-                'solver': widgets.Dropdown(description='solver',
-                                          options=['lbfgs', 'liblinear', 'newton-cg', 'newton-cholesky', 'sag', 'saga'],
-                                          value='lbfgs',)
+                'C':            widgets.FloatText(description='C', value=1.0),
+                'penalty':      widgets.Dropdown(description='Penalty',
+                                    options=[None, 'l1', 'l2'], value='l2'),
+                'solver':       widgets.Dropdown(description='Solver',
+                                    options=['lbfgs', 'liblinear', 'saga'], value='lbfgs'),
+                'class_weight': widgets.Dropdown(description='class_weight',
+                                    options=[None, 'balanced'], value='balanced'),
+                'max_iter':     widgets.IntText(description='max_iter', value=1000),
+            }
+        elif name == 'Decision Tree':
+            hyperparameters_fields = {
+                'max_depth':        widgets.IntText(description='max_depth', value=5),
+                'min_samples_split':widgets.IntText(description='min_samples_split', value=20),
+            }
+        elif name == 'Linear Regression':
+            hyperparameters_fields = {
+                'fit_intercept': widgets.Checkbox(description='fit_intercept', value=True),
             }
         elif name == 'Random Forest':
             hyperparameters_fields = {
@@ -1551,28 +1571,36 @@ class ValidationFramework:
               'max_depth': widgets.IntText(description='max_depth', value=5),
               'learning_rate': widgets.FloatText(description='learning_rate', value=0.1)
             }
-        elif name =="LightGBM":
+        elif name == 'LightGBM':
             hyperparameters_fields = {
-              'n_estimators': widgets.IntText(description='n_estimators', value=100),
-              'num_leaves': widgets.IntText(description='num_leaves', value=31),
-              'max_depth': widgets.IntText(description='max_depth', value=-1),
+              'n_estimators':  widgets.IntText(description='n_estimators', value=100),
+              'num_leaves':    widgets.IntText(description='num_leaves', value=31),
+              'max_depth':     widgets.IntText(description='max_depth', value=-1),
               'learning_rate': widgets.FloatText(description='learning_rate', value=0.1),
-              'reg_alpha': widgets.FloatText(description='reg_alpha', value=0.0),
-              'reg_lambda': widgets.FloatText(description='reg_lambda', value=0.0)
+              'reg_alpha':     widgets.FloatText(description='reg_alpha', value=0.0),
+              'reg_lambda':    widgets.FloatText(description='reg_lambda', value=0.0),
             }
-        elif name == "Multi-layer Neural Network":
+        elif name == 'XGBoost':
             hyperparameters_fields = {
-              #'Note:': widgets.Label('For hidden layer sizes, enter comma-separated values for hidden layer sizes. Ex: 100,200,300 for 3 layers'),
-              'hidden_layer_sizes': widgets.Text(value='100,', description='Hidden Layer Sizes:', continuous_update=False),
-              #'identity': no-op activation, useful to implement linear bottleneck, returns f(x) = x
-              #'logistic': the logistic sigmoid function, returns f(x) = 1 / (1 + exp(-x)).
-              #'tanh': the hyperbolic tan function, returns f(x) = tanh(x).
-              #'relu': the rectified linear unit function, returns f(x) = max(0, x)
-              'activation': widgets.Dropdown(options=['identity', 'logistic', 'tanh', 'relu'], value='relu', description='Activation:'),
-              'solver':  widgets.Dropdown(options=['lbfgs', 'sgd', 'adam'], value='adam', description='Solver:',),
-              'learning_rate': widgets.Dropdown(options=['constant', 'invscaling', 'adaptive'], value='constant', description='Learning Rate:',),
-              # Strength of the L2 regularization term. The L2 regularization term is divided by the sample size when added to the loss.
-              'alpha': widgets.FloatText(description='alpha', value=0.0),
+              'n_estimators':     widgets.IntText(description='n_estimators', value=100),
+              'max_depth':        widgets.IntText(description='max_depth', value=6),
+              'learning_rate':    widgets.FloatText(description='learning_rate', value=0.1),
+              'subsample':        widgets.FloatText(description='subsample', value=0.8),
+              'colsample_bytree': widgets.FloatText(description='colsample_bytree', value=0.8),
+              'reg_alpha':        widgets.FloatText(description='reg_alpha', value=0.0),
+              'reg_lambda':       widgets.FloatText(description='reg_lambda', value=1.0),
+            }
+        elif name == 'MLP':
+            hyperparameters_fields = {
+              'hidden_layer_sizes': widgets.Text(value='100,', description='Hidden layers:',
+                                                 continuous_update=False),
+              'activation':    widgets.Dropdown(options=['relu', 'tanh', 'logistic', 'identity'],
+                                                value='relu', description='Activation:'),
+              'solver':        widgets.Dropdown(options=['adam', 'sgd', 'lbfgs'],
+                                                value='adam', description='Solver:'),
+              'learning_rate': widgets.Dropdown(options=['constant', 'invscaling', 'adaptive'],
+                                                value='constant', description='LR schedule:'),
+              'alpha':         widgets.FloatText(description='alpha (L2)', value=0.0001),
             }
         else:
             hyperparameters_fields = {}
@@ -1847,7 +1875,7 @@ class ValidationFramework:
 
       with global_tab:
 
-        if model_select.value == 'Random Forest' or 'logistic Regression':
+        if model_select.value in ('Random Forest', 'GBM', 'LightGBM', 'XGBoost', 'Decision Tree'):
           '''
           Random Forest models treat binary classification as a multi-class problem with two classes.
           When you compute SHAP values for Random Forests on binary classification tasks,
