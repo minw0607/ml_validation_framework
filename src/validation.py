@@ -546,144 +546,127 @@ class ValidationFramework:
   #     display(tab)
 
   def data_preprocess(self):
-   df = self.data
-   if df.empty:
-     print('The dataset is empty.')
-   else:
-     # Get numerical variables
-     numerical_vars = df.select_dtypes(include=['float64', 'int64']).columns.tolist()
+    df = self.data
+    if df.empty:
+      display(HTML(
+        '<div style=”padding:12px;background:#fff3cd;border:1px solid #ffc107;'
+        'border-radius:6px;margin:8px 0”>'
+        '⚠️ <b>No data loaded.</b> Please complete <b>Step 1 — Load Data</b> first.'
+        '</div>'
+      ))
+      return
 
-     # Get categorical variables
-     categorical_vars = df.select_dtypes(include=['object']).columns.tolist()
+    # ── Imputation tab ────────────────────────────────────────────────
+    numerical_vars = df.select_dtypes(include=['float64', 'int64']).columns.tolist()
 
-     # Create imputation dropdown widget
-     var_dropdown = widgets.Dropdown(
-         options=['make selection'] + df.columns.tolist(),
-         description='Select variable:',
-         disabled=False)
+    var_dropdown = widgets.Dropdown(
+      options=['— select variable —'] + df.columns.tolist(),
+      description='Variable:',
+      style={'description_width': 'initial'},
+      layout=widgets.Layout(width='50%'),
+    )
 
-     #impute_methods = \
-      #['make selection', 'mean', 'median', 'most_frequent', 'constant']
+    impute_dropdown = widgets.Dropdown(
+      options=['— select method —'],
+      description='Method:',
+      style={'description_width': 'initial'},
+      layout=widgets.Layout(width='50%'),
+    )
 
-     impute_dropdown = widgets.Dropdown(
-                       description='Imputation method:',
-                       options=['make selection'],
-                       disabled=False)
+    def on_var_change(change):
+      var = change['new']
+      if var == '— select variable —':
+        impute_dropdown.options = ['— select method —']
+        return
+      if df[var].dtype == object:
+        impute_dropdown.options = ['— select method —', 'most_frequent', 'constant']
+      else:
+        impute_dropdown.options = ['— select method —', 'mean', 'median', 'most_frequent', 'constant']
 
-     #impute_dropdown = widgets.Dropdown(
-      #   options=impute_methods,
-      #   description='Impute method:')
+    var_dropdown.observe(on_var_change, names='value')
 
-     def var_dropdown_eventhandler(change):
-       var = change.new
-       if var == 'make selection':
-         return
-       else:
-         var_type = df[var].dtype
-         if var_type == 'object':
-           impute_dropdown.options = \
-           ['Make selection', 'most_frequent', 'constant']
-         else:
-           impute_dropdown.options = \
-           ['Make selection', 'mean', 'median', 'most_frequent', 'constant']
+    confirm_btn = widgets.Button(description='Apply', button_style='success')
+    impute_out = widgets.Output()
 
-         #display(impute_dropdown)
+    def on_impute_click(b):
+      with impute_out:
+        impute_out.clear_output()
+        var = var_dropdown.value
+        method = impute_dropdown.value
+        if var == '— select variable —' or method == '— select method —':
+          print('Please select both a variable and an imputation method.')
+          return
+        n_missing = df[var].isnull().sum()
+        if n_missing == 0:
+          print(f'✔ No missing values in “{var}” — nothing to impute.')
+          return
+        imputer = SimpleImputer(strategy=method)
+        df[var] = imputer.fit_transform(df[[var]])
+        self.data = df
+        print(f'✔ Imputed {n_missing} missing values in “{var}” using {method}.')
+        display(df.head(10))
 
-     # Register the function as an event handler for the variable dropdown
-     var_dropdown.observe(var_dropdown_eventhandler, names='value')
+    confirm_btn.on_click(on_impute_click)
 
-     confirm_button = widgets.Button(description='Confirm',
-                                     button_style='success')
-     impute_output = widgets.Output()
+    impute_widget = widgets.VBox([
+      widgets.HTML('<b>Fill missing values</b> — select a variable and choose an imputation strategy.'),
+      var_dropdown,
+      impute_dropdown,
+      confirm_btn,
+      impute_out,
+    ])
 
-     # Define imputation function
-     def impute_dropdown_eventhandler(sender):
-         with impute_output:
-          impute_output.clear_output()
-          if var_dropdown.value == 'make selection' or impute_dropdown.value == 'make selection':
-           print('Please make a valid selection.')
-          else:
-            variable = var_dropdown.value
-            imp_method = impute_dropdown.value
-            if df[variable].isnull().sum()>0:
-             # Determine the applicable imputation methods based on the data type
-             #if variable in categorical_vars:
-             #  impute_dropdown.options = ['make selection', 'most_frequent', 'constant']
-               #display(impute_dropdown)
-             #elif variable in numerical_vars:
-             #  impute_dropdown.options = ['make selection', 'mean', 'median', 'most_frequent', 'constant']
-               #display(impute_dropdown)
+    # ── Normalization tab ─────────────────────────────────────────────
+    var_dropdown2 = widgets.Dropdown(
+      options=['— select variable —'] + numerical_vars,
+      description='Variable:',
+      style={'description_width': 'initial'},
+      layout=widgets.Layout(width='50%'),
+    )
 
-             # create imputer Note: When strategy == “constant”, fill_value
-             #is used to replace all occurrences of missing_values.
-             #For string or object data types, fill_value must be a string.
-             #If None, fill_value will be 0 when imputing numerical data and “missing_value”
-             #for strings or object data types.
-             imputer = SimpleImputer(strategy=impute_dropdown.value)
+    norm_dropdown = widgets.Dropdown(
+      options=['— select method —', 'standard', 'minmax'],
+      description='Method:',
+      style={'description_width': 'initial'},
+      layout=widgets.Layout(width='50%'),
+    )
 
-             df[variable] = imputer.fit_transform(df[[variable]])
-             self.data = df # update THE dataset attribute of the class
-             print('Imputation method applied successfully.')
-             # Display the first 10 rows of the normalized dataframe
-             display(df.head(10))
-            else:
-             print(f"No missing values found in {variable}.")
-             impute_dropdown.value = 'Make selection'
-             #display(impute_dropdown)
+    confirm_btn2 = widgets.Button(description='Apply', button_style='success')
+    norm_out = widgets.Output()
 
-     confirm_button.on_click(impute_dropdown_eventhandler)
+    def on_norm_click(b):
+      with norm_out:
+        norm_out.clear_output()
+        var = var_dropdown2.value
+        method = norm_dropdown.value
+        if var == '— select variable —' or method == '— select method —':
+          print('Please select both a variable and a normalization method.')
+          return
+        scaler = StandardScaler() if method == 'standard' else MinMaxScaler()
+        df[var] = scaler.fit_transform(df[[var]])
+        self.data = df
+        print(f'✔ Applied {method} normalization to “{var}”.')
+        display(df.head(10))
 
-     impute_widget = widgets.VBox([var_dropdown, impute_dropdown, confirm_button, impute_output])
+    confirm_btn2.on_click(on_norm_click)
 
-     # Create normalization dropdown widget
-     var_dropdown2 = widgets.Dropdown(
-         options=['make selection'] + numerical_vars,
-         description='Select variable:'
-     )
+    norm_widget = widgets.VBox([
+      widgets.HTML('<b>Scale numerical features</b> — standard (z-score) or min-max normalization.'),
+      var_dropdown2,
+      norm_dropdown,
+      confirm_btn2,
+      norm_out,
+    ])
 
-     norm_methods = ['make selection', 'standard', 'minmax']
+    # ── Assemble Tab widget ───────────────────────────────────────────
+    tab = widgets.Tab(children=[impute_widget, norm_widget])
+    try:
+      tab.titles = ['Data Imputation', 'Data Normalization']   # ipywidgets 8+
+    except AttributeError:
+      tab.set_title(0, 'Data Imputation')                       # ipywidgets 7
+      tab.set_title(1, 'Data Normalization')
 
-     norm_dropdown = widgets.Dropdown(
-         options=norm_methods,
-         description='Normalization method:'
-     )
-
-     confirm_button2 = widgets.Button(description='Confirm',
-                                     button_style='success')
-
-     norm_output = widgets.Output()
-
-     # Define normalization function
-     def norm_handler(sender):
-         norm_output.clear_output()
-         with norm_output:
-             if var_dropdown2.value == 'make selection' or norm_dropdown.value == 'make selection':
-                 print('Please make a valid selection.')
-             else:
-                 if norm_dropdown.value == 'standard':
-                     scaler = StandardScaler()
-                 elif norm_dropdown.value == 'minmax':
-                     scaler = MinMaxScaler()
-                 df[var_dropdown2.value] = scaler.fit_transform(df[[var_dropdown2.value]])
-                 self.data = df # update THE dataset attribute of the class
-                 print('Normalization method applied successfully.')
-                 # Display the first 10 rows of the normalized dataframe
-                 display(df.head(10))
-
-     confirm_button2.on_click(norm_handler)
-
-     norm_widget = widgets.VBox([var_dropdown2, norm_dropdown, confirm_button2, norm_output])
-
-     # Display widgets in separate tabs
-     tab_contents = ['Data Imputation', 'Data Normalization']
-     widgets_list = [impute_widget, norm_widget]
-
-     tab = widgets.Tab()
-     tab.children = widgets_list
-     for i in range(len(widgets_list)):
-         tab.set_title(i, tab_contents[i])
-
-     display(tab)
+    display(tab)
 
 
 
