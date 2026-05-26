@@ -668,26 +668,21 @@ class ValidationFramework:
         norm_out,
       ])
 
-      # ── Assemble Tab widget ─────────────────────────────────────────
-      print("DEBUG data_preprocess: assembling Tab...")
-      tab = widgets.Tab(children=[impute_widget, norm_widget])
-      try:
-        tab.titles = ['Data Imputation', 'Data Normalization']   # ipywidgets 8+
-      except AttributeError:
-        tab.set_title(0, 'Data Imputation')                       # ipywidgets 7
-        tab.set_title(1, 'Data Normalization')
-
-      # Re-enable widget rendering — safe no-op outside Colab.
-      # Needed if the Colab runtime restarted after the setup cell ran.
-      try:
-        from google.colab import output as _co
-        _co.enable_custom_widget_manager()
-      except ImportError:
-        pass
-
-      print("DEBUG data_preprocess: calling display(tab)...")
-      display(tab)
-      print("DEBUG data_preprocess: display(tab) returned.")
+      # ── Display sections directly (Tab widget unreliable in Colab) ────
+      print("DEBUG data_preprocess: displaying sections...")
+      display(HTML(
+        '<div style="background:#e8f0fe;padding:10px 14px;border-left:4px solid #1a73e8;'
+        'border-radius:4px;margin:12px 0 6px;font-size:15px;font-weight:bold">'
+        '🔧 Data Imputation</div>'
+      ))
+      display(impute_widget)
+      display(HTML(
+        '<div style="background:#e6f4ea;padding:10px 14px;border-left:4px solid #34a853;'
+        'border-radius:4px;margin:16px 0 6px;font-size:15px;font-weight:bold">'
+        '📐 Data Normalization</div>'
+      ))
+      display(norm_widget)
+      print("DEBUG data_preprocess: done.")
 
     except Exception as _e:
       import traceback as _tb
