@@ -80,6 +80,16 @@ class ValidationFramework:
     self.random = 0             # random state (default = 0)
     self.data_dir = self._resolve_data_dir(data_dir)
 
+  @staticmethod
+  def _section(icon, title, border_color, bg_color):
+    """Return an HTML section-header string (replaces widgets.Tab)."""
+    return (
+      f'<div style="background:{bg_color};padding:10px 14px;'
+      f'border-left:4px solid {border_color};border-radius:4px;'
+      f'margin:16px 0 6px;font-size:15px;font-weight:bold">'
+      f'{icon} {title}</div>'
+    )
+
   def _resolve_data_dir(self, data_dir):
     if data_dir is not None and os.path.isdir(data_dir):
       return data_dir
@@ -273,16 +283,11 @@ class ValidationFramework:
     convert_button = widgets.Button(description='Convert',
                                     button_style = 'Success')
 
-    # create tabs for numerical and categorical summaries
-    num_tab = widgets.Output()
-    cat_tab = widgets.Output()
+    # create output areas for each summary section
+    num_tab  = widgets.Output()
+    cat_tab  = widgets.Output()
     null_tab = widgets.Output()
     dist_tab = widgets.Output()
-    tabs = widgets.Tab(children=[num_tab, cat_tab, null_tab, dist_tab])
-    tabs.set_title(0, 'Numerical Features Statistics')
-    tabs.set_title(1, 'Categorical Features Statistics')
-    tabs.set_title(2, 'Missing Value')
-    tabs.set_title(3, 'Correlation Analysis')
 
     # display features with missing value status
     null_tab.clear_output()
@@ -416,8 +421,16 @@ class ValidationFramework:
     # attach event handler to button click
     convert_button.on_click(on_convert_button_click)
 
-    # display widgets and initial statistics summaries
-    display(tabs)
+    # display all sections directly (widgets.Tab unreliable in Colab)
+    S = self._section
+    display(HTML(S('📊', 'Numerical Features Statistics',   '#1a73e8', '#e8f0fe')))
+    display(num_tab)
+    display(HTML(S('🏷️', 'Categorical Features Statistics', '#7b1fa2', '#f3e5f5')))
+    display(cat_tab)
+    display(HTML(S('❓', 'Missing Value Analysis',           '#e65100', '#fff3e0')))
+    display(null_tab)
+    display(HTML(S('📈', 'Correlation Analysis',             '#34a853', '#e6f4ea')))
+    display(dist_tab)
     display(widgets.HBox([var_selector, type_selector, convert_button]))
 
     update_stats()
@@ -546,16 +559,8 @@ class ValidationFramework:
   #     display(tab)
 
   def data_preprocess(self):
-    print("DEBUG data_preprocess: method entered")
-    try:
-      df = self.data
-      print(f"DEBUG data_preprocess: data shape={df.shape}, empty={df.empty}")
-    except Exception as e:
-      print(f"DEBUG data_preprocess: error reading self.data — {e}")
-      return
-
+    df = self.data
     if df.empty:
-      print("DEBUG data_preprocess: data is empty, showing warning")
       display(HTML(
         '<div style="padding:12px;background:#fff3cd;border:1px solid #ffc107;'
         'border-radius:6px;margin:8px 0">'
@@ -565,8 +570,7 @@ class ValidationFramework:
       return
 
     try:
-      # ── Imputation tab ──────────────────────────────────────────────
-      print("DEBUG data_preprocess: building widgets...")
+      # ── Imputation section ──────────────────────────────────────────
       numerical_vars = df.select_dtypes(include=['float64', 'int64']).columns.tolist()
 
       var_dropdown = widgets.Dropdown(
@@ -668,21 +672,11 @@ class ValidationFramework:
         norm_out,
       ])
 
-      # ── Display sections directly (Tab widget unreliable in Colab) ────
-      print("DEBUG data_preprocess: displaying sections...")
-      display(HTML(
-        '<div style="background:#e8f0fe;padding:10px 14px;border-left:4px solid #1a73e8;'
-        'border-radius:4px;margin:12px 0 6px;font-size:15px;font-weight:bold">'
-        '🔧 Data Imputation</div>'
-      ))
+      # ── Display sections (widgets.Tab is unreliable in Colab) ────────
+      display(HTML(_section('🔧', 'Data Imputation',   '#1a73e8', '#e8f0fe')))
       display(impute_widget)
-      display(HTML(
-        '<div style="background:#e6f4ea;padding:10px 14px;border-left:4px solid #34a853;'
-        'border-radius:4px;margin:16px 0 6px;font-size:15px;font-weight:bold">'
-        '📐 Data Normalization</div>'
-      ))
+      display(HTML(_section('📐', 'Data Normalization', '#34a853', '#e6f4ea')))
       display(norm_widget)
-      print("DEBUG data_preprocess: done.")
 
     except Exception as _e:
       import traceback as _tb
@@ -794,16 +788,18 @@ class ValidationFramework:
     task = self.task
     target_var = self.target
 
-    # create tabs for each feature selection criterion
-    pearson_corr_tab = widgets.Output()
+    # create output areas for each feature selection section
+    pearson_corr_tab  = widgets.Output()
     spearman_corr_tab = widgets.Output()
-    importance_tab = widgets.Output()
-    tabs = widgets.Tab(children=[pearson_corr_tab, spearman_corr_tab, importance_tab])
-    tabs.set_title(0, 'Pearson Correlation')
-    tabs.set_title(1, 'Spearman Correlation')
-    tabs.set_title(2, 'Feature Importance')
+    importance_tab    = widgets.Output()
 
-    display(tabs)
+    S = self._section
+    display(HTML(S('📐', 'Pearson Correlation',   '#1a73e8', '#e8f0fe')))
+    display(pearson_corr_tab)
+    display(HTML(S('📏', 'Spearman Correlation',  '#7b1fa2', '#f3e5f5')))
+    display(spearman_corr_tab)
+    display(HTML(S('🏆', 'Feature Importance',    '#34a853', '#e6f4ea')))
+    display(importance_tab)
 
 ######################### TAB ###########################
     # display pearson correlation
@@ -1778,17 +1774,18 @@ class ValidationFramework:
     display(output_main)
     #display(progress_bar)
 
-    # create tabs
-    global_tab = widgets.Output() # global feature importance
-    local_tab = widgets.Output()  # local feature importance
-    pdp_tab = widgets.Output()    # partial dependence plot
+    # create output areas for each explainability section
+    global_tab = widgets.Output()  # global feature importance
+    local_tab  = widgets.Output()  # local feature importance
+    pdp_tab    = widgets.Output()  # partial dependence plot
 
-    tabs = widgets.Tab(children=[global_tab, local_tab, pdp_tab])
-    tabs.set_title(0, 'Global Explainability')
-    tabs.set_title(1, 'Local Explainability')
-    tabs.set_title(2, 'Partial Dependence Plot')
-
-    display(tabs)
+    S = self._section
+    display(HTML(S('🌐', 'Global Explainability',     '#1a73e8', '#e8f0fe')))
+    display(global_tab)
+    display(HTML(S('🔍', 'Local Explainability',      '#7b1fa2', '#f3e5f5')))
+    display(local_tab)
+    display(HTML(S('📉', 'Partial Dependence Plot',   '#34a853', '#e6f4ea')))
+    display(pdp_tab)
 
     ############ Global Explainability Tab ############
 
@@ -2156,22 +2153,21 @@ class ValidationFramework:
     resiliency_tab = widgets.Output()  # resiliency
     robust_tab = widgets.Output()      #robustness
     fairness_tab = widgets.Output()    # fairness
-    tabs = widgets.Tab(children=[accuracy_tab,
-                                reliability_tab,
-                                 overfit_tab,
-                                 weakspot_tab,
-                                 resiliency_tab,
-                                 robust_tab,
-                                 fairness_tab])
-    tabs.set_title(0, 'Accuracy')
-    tabs.set_title(1, 'Reliability')
-    tabs.set_title(2, 'Overfit')
-    tabs.set_title(3, 'Weak Spot')
-    tabs.set_title(4, 'Resiliency')
-    tabs.set_title(5, 'Robustness')
-    tabs.set_title(6, 'Fairness')
-
-    display(tabs)
+    S = self._section
+    display(HTML(S('🎯', 'Accuracy',    '#1a73e8', '#e8f0fe')))
+    display(accuracy_tab)
+    display(HTML(S('📡', 'Reliability', '#7b1fa2', '#f3e5f5')))
+    display(reliability_tab)
+    display(HTML(S('⚖️', 'Overfit',     '#e65100', '#fff3e0')))
+    display(overfit_tab)
+    display(HTML(S('🔦', 'Weak Spot',   '#c62828', '#ffebee')))
+    display(weakspot_tab)
+    display(HTML(S('🛡️', 'Resiliency',  '#00796b', '#e0f2f1')))
+    display(resiliency_tab)
+    display(HTML(S('💪', 'Robustness',  '#4527a0', '#ede7f6')))
+    display(robust_tab)
+    display(HTML(S('⚖️', 'Fairness',    '#34a853', '#e6f4ea')))
+    display(fairness_tab)
 
     def on_change_global(change):
       if change['name'] == 'value' and (change['new'] != change['old']):
