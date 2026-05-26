@@ -546,127 +546,145 @@ class ValidationFramework:
   #     display(tab)
 
   def data_preprocess(self):
-    df = self.data
+    print("DEBUG data_preprocess: method entered")
+    try:
+      df = self.data
+      print(f"DEBUG data_preprocess: data shape={df.shape}, empty={df.empty}")
+    except Exception as e:
+      print(f"DEBUG data_preprocess: error reading self.data — {e}")
+      return
+
     if df.empty:
+      print("DEBUG data_preprocess: data is empty, showing warning")
       display(HTML(
-        '<div style=”padding:12px;background:#fff3cd;border:1px solid #ffc107;'
-        'border-radius:6px;margin:8px 0”>'
+        '<div style="padding:12px;background:#fff3cd;border:1px solid #ffc107;'
+        'border-radius:6px;margin:8px 0">'
         '⚠️ <b>No data loaded.</b> Please complete <b>Step 1 — Load Data</b> first.'
         '</div>'
       ))
       return
 
-    # ── Imputation tab ────────────────────────────────────────────────
-    numerical_vars = df.select_dtypes(include=['float64', 'int64']).columns.tolist()
-
-    var_dropdown = widgets.Dropdown(
-      options=['— select variable —'] + df.columns.tolist(),
-      description='Variable:',
-      style={'description_width': 'initial'},
-      layout=widgets.Layout(width='50%'),
-    )
-
-    impute_dropdown = widgets.Dropdown(
-      options=['— select method —'],
-      description='Method:',
-      style={'description_width': 'initial'},
-      layout=widgets.Layout(width='50%'),
-    )
-
-    def on_var_change(change):
-      var = change['new']
-      if var == '— select variable —':
-        impute_dropdown.options = ['— select method —']
-        return
-      if df[var].dtype == object:
-        impute_dropdown.options = ['— select method —', 'most_frequent', 'constant']
-      else:
-        impute_dropdown.options = ['— select method —', 'mean', 'median', 'most_frequent', 'constant']
-
-    var_dropdown.observe(on_var_change, names='value')
-
-    confirm_btn = widgets.Button(description='Apply', button_style='success')
-    impute_out = widgets.Output()
-
-    def on_impute_click(b):
-      with impute_out:
-        impute_out.clear_output()
-        var = var_dropdown.value
-        method = impute_dropdown.value
-        if var == '— select variable —' or method == '— select method —':
-          print('Please select both a variable and an imputation method.')
-          return
-        n_missing = df[var].isnull().sum()
-        if n_missing == 0:
-          print(f'✔ No missing values in “{var}” — nothing to impute.')
-          return
-        imputer = SimpleImputer(strategy=method)
-        df[var] = imputer.fit_transform(df[[var]])
-        self.data = df
-        print(f'✔ Imputed {n_missing} missing values in “{var}” using {method}.')
-        display(df.head(10))
-
-    confirm_btn.on_click(on_impute_click)
-
-    impute_widget = widgets.VBox([
-      widgets.HTML('<b>Fill missing values</b> — select a variable and choose an imputation strategy.'),
-      var_dropdown,
-      impute_dropdown,
-      confirm_btn,
-      impute_out,
-    ])
-
-    # ── Normalization tab ─────────────────────────────────────────────
-    var_dropdown2 = widgets.Dropdown(
-      options=['— select variable —'] + numerical_vars,
-      description='Variable:',
-      style={'description_width': 'initial'},
-      layout=widgets.Layout(width='50%'),
-    )
-
-    norm_dropdown = widgets.Dropdown(
-      options=['— select method —', 'standard', 'minmax'],
-      description='Method:',
-      style={'description_width': 'initial'},
-      layout=widgets.Layout(width='50%'),
-    )
-
-    confirm_btn2 = widgets.Button(description='Apply', button_style='success')
-    norm_out = widgets.Output()
-
-    def on_norm_click(b):
-      with norm_out:
-        norm_out.clear_output()
-        var = var_dropdown2.value
-        method = norm_dropdown.value
-        if var == '— select variable —' or method == '— select method —':
-          print('Please select both a variable and a normalization method.')
-          return
-        scaler = StandardScaler() if method == 'standard' else MinMaxScaler()
-        df[var] = scaler.fit_transform(df[[var]])
-        self.data = df
-        print(f'✔ Applied {method} normalization to “{var}”.')
-        display(df.head(10))
-
-    confirm_btn2.on_click(on_norm_click)
-
-    norm_widget = widgets.VBox([
-      widgets.HTML('<b>Scale numerical features</b> — standard (z-score) or min-max normalization.'),
-      var_dropdown2,
-      norm_dropdown,
-      confirm_btn2,
-      norm_out,
-    ])
-
-    # ── Assemble Tab widget ───────────────────────────────────────────
-    tab = widgets.Tab(children=[impute_widget, norm_widget])
     try:
-      tab.titles = ['Data Imputation', 'Data Normalization']   # ipywidgets 8+
-    except AttributeError:
-      tab.set_title(0, 'Data Imputation')                       # ipywidgets 7
-      tab.set_title(1, 'Data Normalization')
+      # ── Imputation tab ──────────────────────────────────────────────
+      print("DEBUG data_preprocess: building widgets...")
+      numerical_vars = df.select_dtypes(include=['float64', 'int64']).columns.tolist()
 
-    display(tab)
+      var_dropdown = widgets.Dropdown(
+        options=['— select variable —'] + df.columns.tolist(),
+        description='Variable:',
+        style={'description_width': 'initial'},
+        layout=widgets.Layout(width='50%'),
+      )
+
+      impute_dropdown = widgets.Dropdown(
+        options=['— select method —'],
+        description='Method:',
+        style={'description_width': 'initial'},
+        layout=widgets.Layout(width='50%'),
+      )
+
+      def on_var_change(change):
+        var = change['new']
+        if var == '— select variable —':
+          impute_dropdown.options = ['— select method —']
+          return
+        if df[var].dtype == object:
+          impute_dropdown.options = ['— select method —', 'most_frequent', 'constant']
+        else:
+          impute_dropdown.options = ['— select method —', 'mean', 'median', 'most_frequent', 'constant']
+
+      var_dropdown.observe(on_var_change, names='value')
+
+      confirm_btn = widgets.Button(description='Apply', button_style='success')
+      impute_out = widgets.Output()
+
+      def on_impute_click(b):
+        with impute_out:
+          impute_out.clear_output()
+          var = var_dropdown.value
+          method = impute_dropdown.value
+          if var == '— select variable —' or method == '— select method —':
+            print('Please select both a variable and an imputation method.')
+            return
+          n_missing = df[var].isnull().sum()
+          if n_missing == 0:
+            print(f'✔ No missing values in "{var}" — nothing to impute.')
+            return
+          imputer = SimpleImputer(strategy=method)
+          df[var] = imputer.fit_transform(df[[var]])
+          self.data = df
+          print(f'✔ Imputed {n_missing} missing values in "{var}" using {method}.')
+          display(df.head(10))
+
+      confirm_btn.on_click(on_impute_click)
+
+      impute_widget = widgets.VBox([
+        widgets.HTML('<b>Fill missing values</b> — select a variable and choose an imputation strategy.'),
+        var_dropdown,
+        impute_dropdown,
+        confirm_btn,
+        impute_out,
+      ])
+
+      # ── Normalization tab ───────────────────────────────────────────
+      var_dropdown2 = widgets.Dropdown(
+        options=['— select variable —'] + numerical_vars,
+        description='Variable:',
+        style={'description_width': 'initial'},
+        layout=widgets.Layout(width='50%'),
+      )
+
+      norm_dropdown = widgets.Dropdown(
+        options=['— select method —', 'standard', 'minmax'],
+        description='Method:',
+        style={'description_width': 'initial'},
+        layout=widgets.Layout(width='50%'),
+      )
+
+      confirm_btn2 = widgets.Button(description='Apply', button_style='success')
+      norm_out = widgets.Output()
+
+      def on_norm_click(b):
+        with norm_out:
+          norm_out.clear_output()
+          var = var_dropdown2.value
+          method = norm_dropdown.value
+          if var == '— select variable —' or method == '— select method —':
+            print('Please select both a variable and a normalization method.')
+            return
+          scaler = StandardScaler() if method == 'standard' else MinMaxScaler()
+          df[var] = scaler.fit_transform(df[[var]])
+          self.data = df
+          print(f'✔ Applied {method} normalization to "{var}".')
+          display(df.head(10))
+
+      confirm_btn2.on_click(on_norm_click)
+
+      norm_widget = widgets.VBox([
+        widgets.HTML('<b>Scale numerical features</b> — standard (z-score) or min-max normalization.'),
+        var_dropdown2,
+        norm_dropdown,
+        confirm_btn2,
+        norm_out,
+      ])
+
+      # ── Assemble Tab widget ─────────────────────────────────────────
+      print("DEBUG data_preprocess: assembling Tab...")
+      tab = widgets.Tab(children=[impute_widget, norm_widget])
+      try:
+        tab.titles = ['Data Imputation', 'Data Normalization']   # ipywidgets 8+
+      except AttributeError:
+        tab.set_title(0, 'Data Imputation')                       # ipywidgets 7
+        tab.set_title(1, 'Data Normalization')
+
+      print("DEBUG data_preprocess: calling display(tab)...")
+      display(tab)
+      print("DEBUG data_preprocess: display(tab) returned.")
+
+    except Exception as _e:
+      import traceback as _tb
+      print(f"ERROR in data_preprocess: {_e}")
+      _tb.print_exc()
 
 
 
@@ -1507,12 +1525,12 @@ class ValidationFramework:
         # Define hyperparameter fields for each model
         if name == 'Logistic Regression':
           #Warning The choice of the algorithm depends on the penalty chosen. Supported penalties by solver:
-          #  'lbfgs' - [‘l2’, None]
-          #  'liblinear' - [‘l1’, ‘l2’]
-          #  'newton-cg' - [‘l2’, None]
-          #  'newton-cholesky' - [‘l2’, None]
-          #  'sag' - [‘l2’, None]
-          #  'saga' - [‘elasticnet’, ‘l1’, ‘l2’, None]
+          #  'lbfgs' - ['l2', None]
+          #  'liblinear' - ['l1', 'l2']
+          #  'newton-cg' - ['l2', None]
+          #  'newton-cholesky' - ['l2', None]
+          #  'sag' - ['l2', None]
+          #  'saga' - ['elasticnet', 'l1', 'l2', None]
             hyperparameters_fields = {
                 'C': widgets.FloatText(description='C',
                                       value=1.0), #Inverse of regularization strength
