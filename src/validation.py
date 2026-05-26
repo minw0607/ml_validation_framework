@@ -576,11 +576,15 @@ class ValidationFramework:
       return
 
     try:
-      # ── Imputation section ──────────────────────────────────────────
-      numerical_vars = df.select_dtypes(include=['float64', 'int64']).columns.tolist()
+      # Exclude the target column from preprocessing dropdowns
+      target = self.target
+      feature_cols    = [c for c in df.columns if c != target]
+      numerical_feats = [c for c in df.select_dtypes(
+                            include=['float64', 'int64']).columns if c != target]
 
+      # ── Imputation section ──────────────────────────────────────────
       var_dropdown = widgets.Dropdown(
-        options=['— select variable —'] + df.columns.tolist(),
+        options=['— select variable —'] + feature_cols,
         description='Variable:',
         style={'description_width': 'initial'},
         layout=widgets.Layout(width='50%'),
@@ -597,11 +601,12 @@ class ValidationFramework:
         var = change['new']
         if var == '— select variable —':
           impute_dropdown.options = ['— select method —']
-          return
-        if df[var].dtype == object:
+        elif df[var].dtype == object:
           impute_dropdown.options = ['— select method —', 'most_frequent', 'constant']
         else:
-          impute_dropdown.options = ['— select method —', 'mean', 'median', 'most_frequent', 'constant']
+          impute_dropdown.options = ['— select method —', 'mean', 'median',
+                                     'most_frequent', 'constant']
+        impute_dropdown.value = '— select method —'   # always reset on variable change
 
       var_dropdown.observe(on_var_change, names='value')
 
@@ -611,7 +616,7 @@ class ValidationFramework:
       def on_impute_click(b):
         with impute_out:
           impute_out.clear_output()
-          var = var_dropdown.value
+          var    = var_dropdown.value
           method = impute_dropdown.value
           if var == '— select variable —' or method == '— select method —':
             print('Please select both a variable and an imputation method.')
@@ -629,16 +634,16 @@ class ValidationFramework:
       confirm_btn.on_click(on_impute_click)
 
       impute_widget = widgets.VBox([
-        widgets.HTML('<b>Fill missing values</b> — select a variable and choose an imputation strategy.'),
+        widgets.HTML('<b>Fill missing values</b> — select a feature column and an imputation strategy.'),
         var_dropdown,
         impute_dropdown,
         confirm_btn,
         impute_out,
       ])
 
-      # ── Normalization tab ───────────────────────────────────────────
+      # ── Normalization section ───────────────────────────────────────
       var_dropdown2 = widgets.Dropdown(
-        options=['— select variable —'] + numerical_vars,
+        options=['— select variable —'] + numerical_feats,
         description='Variable:',
         style={'description_width': 'initial'},
         layout=widgets.Layout(width='50%'),
@@ -657,7 +662,7 @@ class ValidationFramework:
       def on_norm_click(b):
         with norm_out:
           norm_out.clear_output()
-          var = var_dropdown2.value
+          var    = var_dropdown2.value
           method = norm_dropdown.value
           if var == '— select variable —' or method == '— select method —':
             print('Please select both a variable and a normalization method.')
