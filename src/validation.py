@@ -423,127 +423,127 @@ class ValidationFramework:
     update_stats()
 
 
-  # data info (feature names, data types, counts, etc.)
-   def data_info(self):
-     df = self.data
-     if df.empty:
-       print('Please upload or load data first.')
-     else:
-       df.info()
+ # data info (feature names, data types, counts, etc.)
+  def data_info(self):
+    df = self.data
+    if df.empty:
+      print('Please upload or load data first.')
+    else:
+      df.info()
 
 
-   # data preprocessing
-   # def data_preprocssing(self):
-   #   df = self.data
-   #   if df.empty:
-   #     print('Please upload or load data first.')
-   #   else:
-   #     # missing data treatment
-   #     missing_vars = df.columns[df.isnull().any()]
+  # data preprocessing
+  # def data_preprocssing(self):
+  #   df = self.data
+  #   if df.empty:
+  #     print('Please upload or load data first.')
+  #   else:
+  #     # missing data treatment
+  #     missing_vars = df.columns[df.isnull().any()]
 
-   #     # Create a dropdown widget for selecting the variable to impute
-   #     var_null_dropdown = widgets.Dropdown(
-   #         options=list(missing_vars),
-   #         description='Feature with Null',
-   #         disabled=False
-   #     )
+  #     # Create a dropdown widget for selecting the variable to impute
+  #     var_null_dropdown = widgets.Dropdown(
+  #         options=list(missing_vars),
+  #         description='Feature with Null',
+  #         disabled=False
+  #     )
 
-   #     # Create a dropdown widget for selecting the imputation method
-   #     method_null_dropdown = widgets.Dropdown(
-   #         options=['mean', 'median', 'mode', 'constant'],
-   #         description='Imputation Method:',
-   #         disabled=False
-   #     )
+  #     # Create a dropdown widget for selecting the imputation method
+  #     method_null_dropdown = widgets.Dropdown(
+  #         options=['mean', 'median', 'mode', 'constant'],
+  #         description='Imputation Method:',
+  #         disabled=False
+  #     )
 
-   #     # Create a function to handle the change in the variable dropdown
-   #     def var_null_dropdown_eventhandler(change):
-   #         variable = change.new
+  #     # Create a function to handle the change in the variable dropdown
+  #     def var_null_dropdown_eventhandler(change):
+  #         variable = change.new
 
-   #         # Select the data for the selected variable
-   #         variable_data = df[[variable]]
+  #         # Select the data for the selected variable
+  #         variable_data = df[[variable]]
 
-   #         # Determine the data type of the selected variable
-   #         variable_dtype = df[variable].dtype
+  #         # Determine the data type of the selected variable
+  #         variable_dtype = df[variable].dtype
 
-   #         # Determine the applicable imputation methods based on the data type
-   #         if variable_dtype == 'object':
-   #             imputation_methods = ['most_frequent', 'constant']
-   #         else:
-   #             imputation_methods = ['mean', 'median', 'most_frequent', 'constant']
+  #         # Determine the applicable imputation methods based on the data type
+  #         if variable_dtype == 'object':
+  #             imputation_methods = ['most_frequent', 'constant']
+  #         else:
+  #             imputation_methods = ['mean', 'median', 'most_frequent', 'constant']
 
-   #         # Update the options in the method dropdown
-   #         method_null_dropdown.options = imputation_methods
+  #         # Update the options in the method dropdown
+  #         method_null_dropdown.options = imputation_methods
 
-   #         # Create a SimpleImputer object with the selected imputation method
-   #         imputer = SimpleImputer(strategy=method_null_dropdown.value)
+  #         # Create a SimpleImputer object with the selected imputation method
+  #         imputer = SimpleImputer(strategy=method_null_dropdown.value)
 
-   #         # Fit and transform the imputer on the variable data
-   #         variable_data_imputed = imputer.fit_transform(variable_data)
+  #         # Fit and transform the imputer on the variable data
+  #         variable_data_imputed = imputer.fit_transform(variable_data)
 
-   #         # Replace the original variable data with the imputed data in the dataframe
-   #         df[variable] = variable_data_imputed
+  #         # Replace the original variable data with the imputed data in the dataframe
+  #         df[variable] = variable_data_imputed
 
-   #         # Display the first 10 rows of the normalized dataframe
-   #         display(df.head(10))
+  #         # Display the first 10 rows of the normalized dataframe
+  #         display(df.head(10))
 
-   #     # Register the function as an event handler for the variable dropdown
-   #     var_null_dropdown.observe(var_null_dropdown_eventhandler, names='value')
+  #     # Register the function as an event handler for the variable dropdown
+  #     var_null_dropdown.observe(var_null_dropdown_eventhandler, names='value')
 
-   #     # Display the variable dropdown
-   #     #display(var_null_dropdown)
-   #     #display(method_null_dropdown)
+  #     # Display the variable dropdown
+  #     #display(var_null_dropdown)
+  #     #display(method_null_dropdown)
 
-   #     # data normalization component
-   #     # Get the numerical variables
-   #     numerical_vars = list(df.select_dtypes(include=['float64', 'int64']).columns)
+  #     # data normalization component
+  #     # Get the numerical variables
+  #     numerical_vars = list(df.select_dtypes(include=['float64', 'int64']).columns)
 
-   #     # Create a dropdown widget for selecting the variable
-   #     var_num_dropdown = widgets.Dropdown(options=numerical_vars, description='Features')
+  #     # Create a dropdown widget for selecting the variable
+  #     var_num_dropdown = widgets.Dropdown(options=numerical_vars, description='Features')
 
-   #     # Create a dropdown widget for selecting the normalization method
-   #     norm_dropdown = widgets.Dropdown(options=['min-max', 'z-score'], description='Normalization method')
+  #     # Create a dropdown widget for selecting the normalization method
+  #     norm_dropdown = widgets.Dropdown(options=['min-max', 'z-score'], description='Normalization method')
 
-   #     # Define a function to handle the change in the variable dropdown
-   #     def var_num_dropdown_eventhandler(change):
-   #         variable = change.new
+  #     # Define a function to handle the change in the variable dropdown
+  #     def var_num_dropdown_eventhandler(change):
+  #         variable = change.new
 
-   #         # Select the data for the selected variable
-   #         variable_data = df[variable]
+  #         # Select the data for the selected variable
+  #         variable_data = df[variable]
 
-   #         # Determine the selected normalization method
-   #         norm_method = norm_dropdown.value
+  #         # Determine the selected normalization method
+  #         norm_method = norm_dropdown.value
 
-   #         # Normalize the data based on the selected normalization method
-   #         if norm_method == 'min-max':
-   #             variable_data_normalized = \
-   #             (variable_data - variable_data.min()) / (variable_data.max() - variable_data.min())
-   #         elif norm_method == 'z-score':
-   #             variable_data_normalized = \
-   #             (variable_data - variable_data.mean()) / variable_data.std()
+  #         # Normalize the data based on the selected normalization method
+  #         if norm_method == 'min-max':
+  #             variable_data_normalized = \
+  #             (variable_data - variable_data.min()) / (variable_data.max() - variable_data.min())
+  #         elif norm_method == 'z-score':
+  #             variable_data_normalized = \
+  #             (variable_data - variable_data.mean()) / variable_data.std()
 
-   #         # Update the variable data in the dataframe with the normalized data
-   #         df[variable] = variable_data_normalized
+  #         # Update the variable data in the dataframe with the normalized data
+  #         df[variable] = variable_data_normalized
 
-   #         # Display the first 10 rows of the normalized dataframe
-   #         display(df.head(10))
+  #         # Display the first 10 rows of the normalized dataframe
+  #         display(df.head(10))
 
-   #     # Register the function as an event handler for the variable dropdown
-   #     var_num_dropdown.observe(var_num_dropdown_eventhandler, names='value')
+  #     # Register the function as an event handler for the variable dropdown
+  #     var_num_dropdown.observe(var_num_dropdown_eventhandler, names='value')
 
-   #     # Display the variable and normalization method dropdowns
-   #     #display(var_num_dropdown)
-   #     #display(norm_dropdown)
+  #     # Display the variable and normalization method dropdowns
+  #     #display(var_num_dropdown)
+  #     #display(norm_dropdown)
 
-   #     # Create a tab widget with two tabs
-   #     tab = widgets.Tab()
-   #     tab_contents = ['Missing Data Imputation', 'Numerical Feature Normalization']
-   #     tab.children = [widgets.VBox([var_null_dropdown, method_null_dropdown]), \
-   #                     widgets.VBox([var_num_dropdown, norm_dropdown])]
-   #     for i in range(len(tab_contents)):
-   #         tab.set_title(i, tab_contents[i])
+  #     # Create a tab widget with two tabs
+  #     tab = widgets.Tab()
+  #     tab_contents = ['Missing Data Imputation', 'Numerical Feature Normalization']
+  #     tab.children = [widgets.VBox([var_null_dropdown, method_null_dropdown]), \
+  #                     widgets.VBox([var_num_dropdown, norm_dropdown])]
+  #     for i in range(len(tab_contents)):
+  #         tab.set_title(i, tab_contents[i])
 
-   #     # Display the tab widget
-   #     display(tab)
+  #     # Display the tab widget
+  #     display(tab)
 
   def data_preprocess(self):
    df = self.data
@@ -783,536 +783,536 @@ class ValidationFramework:
     ]))
 
 
-    def feature_select(self):
-      df = self.data
-      test_ratio = self.test_ratio
-      random_state = self.random
-      task = self.task
-      target_var = self.target
+  def feature_select(self):
+    df = self.data
+    test_ratio = self.test_ratio
+    random_state = self.random
+    task = self.task
+    target_var = self.target
 
-      # create tabs for each feature selection criterion
-      pearson_corr_tab = widgets.Output()
-      spearman_corr_tab = widgets.Output()
-      importance_tab = widgets.Output()
-      tabs = widgets.Tab(children=[pearson_corr_tab, spearman_corr_tab, importance_tab])
-      tabs.set_title(0, 'Pearson Correlation')
-      tabs.set_title(1, 'Spearman Correlation')
-      tabs.set_title(2, 'Feature Importance')
+    # create tabs for each feature selection criterion
+    pearson_corr_tab = widgets.Output()
+    spearman_corr_tab = widgets.Output()
+    importance_tab = widgets.Output()
+    tabs = widgets.Tab(children=[pearson_corr_tab, spearman_corr_tab, importance_tab])
+    tabs.set_title(0, 'Pearson Correlation')
+    tabs.set_title(1, 'Spearman Correlation')
+    tabs.set_title(2, 'Feature Importance')
 
-      display(tabs)
+    display(tabs)
 
-  ######################### TAB ###########################
-      # display pearson correlation
-      pearson_corr_tab.clear_output()
-      with pearson_corr_tab:
-        # Create the bar plot of the Pearson correlation coefficients
-        def create_corr_plot(threshold):
-          # Compute the Pearson correlation coefficients between the variables and the target variable
-          df = self.data
-
-          # Select only numberical variables for pearson correlation
-          num_vars = df.drop(columns=[target_var]).select_dtypes(include=[np.number]).columns
-          corr = df[num_vars].apply(lambda x: x.corr(df[target_var]))
-
-          corr_filtered = corr[abs(corr) >= threshold]
-          corr_filtered_less = corr[abs(corr) < threshold]
-
-          plt.clf() # clear the existing plot if any
-          plt.figure(figsize=(10,6))
-          plt.bar(x=corr_filtered_less.index, height=corr_filtered_less.values, color='grey')
-          plt.bar(x=corr_filtered.index, height=corr_filtered.values, color='green')
-          plt.xticks(rotation=90)
-          plt.axhline(y=threshold, color='r', linestyle='--')
-          plt.axhline(y=-threshold, color='r', linestyle='--')
-          plt.title('Pearson Correlation Coefficients with {}'.format(target_var))
-          plt.show()
-
-        # Create the widget to select the threshold
-        threshold_slider = widgets.FloatSlider(
-            value=0.1,
-            min=0,
-            max=1,
-            step=0.01,
-            description='Threshold:',
-            orientation='horizontal'
-        )
-
-        # threshold_output = widgets.Output()
-
-        # def threshold_slider_eventhandler(change):
-        #   pearson_corr_tab.clear_output()
-        #   threshold = change.new
-        #   with threshold_output:
-        #     create_corr_plot(threshold)
-        #     threshold_slider.value = threshold
-        #     display(widgets.HBox([threshold_slider, button_remove, button_revert]))
-
-        # # Register the function as an event handler for the threshold slider
-        # threshold_slider.observe(threshold_slider_eventhandler, names='value')
-
-        # create a button to confirm the threshold and re-generate the plot
-        button_threshold = widgets.Button(description='Confirm Threshold',
-                          layout=widgets.Layout(width='25%', height='30px'),
-                          button_style = 'success')
-
-        # Create the button widget to confirm the selection of the threshold
-        button_remove = widgets.Button(description='Remove features',
-                                       button_style = 'success')
-        button_revert = widgets.Button(description='Revert',
-                                      icon='reply',
-                                      button_style='warning')
-
-        # create the output widgets
-        output_remove = widgets.Output()
-        output_revert = widgets.Output()
-        # create a dictionary to map buttons to their corresponding output widgets
-        output_dict = {button_remove: output_remove, button_revert: output_revert}
-
-
-
-
-        # Define the output widget to display the plot and confirmation message
-        pearson_out = widgets.Output()
-
-        def on_button_threshold_clicked(b):
-          threshold = threshold_slider.value
-
-          with pearson_corr_tab:
-            clear_output() # clear all existing outputs in the current tab
-
-            threshold_slider.value = threshold
-            display(widgets.HBox([threshold_slider, button_threshold]))
-            display(widgets.HBox([button_remove, button_revert]))
-            create_corr_plot(threshold)
-
-            print("The threshold of Pearson Correlation is set to be {}.".format(threshold))
-
-          #pearson_out.clear_output()
-          # with pearson_out:
-          #   clear_output()
-          #   plt.clf()
-          #   create_corr_plot(threshold)
-          #   print("The threshold of Pearson Correlation is set to be {}.".format(threshold))
-          #   #display(pearson_out)
-
-        button_threshold.on_click(on_button_threshold_clicked)
-
-        # Define a function to remove the variables with correlation less than the threshold
-        def remove_variables(threshold):
-            # Compute the Pearson correlation coefficients between the variables and the target variable
-            df = self.data
-            corr = df.drop(target_var, axis=1).apply(lambda x: x.corr(df[target_var]))
-            corr_vars = corr[abs(corr) < threshold].index.tolist()
-            df_corr = df.drop(columns = corr_vars)
-            return df_corr
-
-
-        # Define a function to handle the button click event
-        def on_button_remove_clicked(b):
-          threshold = threshold_slider.value
-          #create_corr_plot(threshold)
-          self.data_copy = self.data
-          self.data = remove_variables(threshold) # update the dataset attribute of the class
-          #  clear_output()
-          with output_dict[b]:
-            #with output_dict[button_revert]:
-            display('Features with correlations less than {} have been removed.'.format(threshold))
-
-            display(self.data)
-          with pearson_corr_tab:
-           display(output_dict[b])
-
-        def on_button_revert_clicked(b):
-            self.data = self.data_copy
-            # clear the output generated by button1
-            with output_dict[button_remove]:
-              clear_output()
-            #with output_dict[b]:
-            display('The removed features are added back to the dataset.')
-
-            display(self.data)
-            #display(output_dict[b])
-
-        # Attach the button click event to the button widgets
-        button_remove.on_click(on_button_remove_clicked)
-        button_revert.on_click(on_button_revert_clicked)
-
-
-        display(widgets.HBox([threshold_slider, button_threshold]))
-        display(widgets.HBox([button_remove, button_revert]))
-        create_corr_plot(threshold_slider.value)
-
-        #display(output_remove)
-        #display(output_revert)
-
-        # Create an output widget for printing the confirmation message and updated dataset
-        #pearson_out = widgets.Output()
-
-        # Display the correlation and widgets
-
-        #pearson_widget = widgets.HBox([threshold_slider, button_threshold])
-        #feature_widget = widgets.HBox([button_remove, button_revert])
-        #display(widgets.HBox([button_remove, button_revert]))
-        #display(widgets.VBox([pearson_widget, feature_widget]))
-        #create_corr_plot(threshold_slider.value)
-        #display(pearson_out)
-
-
-  ######################### TAB #################################
-      # display spearman correlation and correlation heatmap
-      # Handling Multicollinear Features
-      spearman_corr_tab.clear_output()
-      with spearman_corr_tab:
+######################### TAB ###########################
+    # display pearson correlation
+    pearson_corr_tab.clear_output()
+    with pearson_corr_tab:
+      # Create the bar plot of the Pearson correlation coefficients
+      def create_corr_plot(threshold):
+        # Compute the Pearson correlation coefficients between the variables and the target variable
         df = self.data
-      target_variable = self.target
-      num_vars = df.drop(columns=[target_variable]).select_dtypes(include=[np.number]).columns
 
-      spearman_out = widgets.Output()
+        # Select only numberical variables for pearson correlation
+        num_vars = df.drop(columns=[target_var]).select_dtypes(include=[np.number]).columns
+        corr = df[num_vars].apply(lambda x: x.corr(df[target_var]))
 
-      threshold_slider_sp = widgets.FloatSlider(
-          value=0.1, min=0, max=1, step=0.01, description='Threshold:')
-      btn_sp = widgets.Button(description='Apply Threshold', button_style='success')
-      btn_remove_sp = widgets.Button(description='Remove Features', button_style='success')
-      btn_revert_sp = widgets.Button(description='Revert', icon='reply', button_style='warning')
+        corr_filtered = corr[abs(corr) >= threshold]
+        corr_filtered_less = corr[abs(corr) < threshold]
 
-      def draw_spearman(threshold=0.1):
-        corr = df[num_vars].apply(lambda x: x.corr(df[target_variable], method='spearman'))
-        pos = corr[abs(corr) >= threshold]
-        neg = corr[abs(corr) < threshold]
-        plt.clf()
-        plt.figure(figsize=(10, 6))
-        plt.bar(neg.index, neg.values, color='grey')
-        plt.bar(pos.index, pos.values, color='steelblue')
+        plt.clf() # clear the existing plot if any
+        plt.figure(figsize=(10,6))
+        plt.bar(x=corr_filtered_less.index, height=corr_filtered_less.values, color='grey')
+        plt.bar(x=corr_filtered.index, height=corr_filtered.values, color='green')
         plt.xticks(rotation=90)
-        plt.axhline(threshold, color='r', linestyle='--', label=f'+{threshold}')
-        plt.axhline(-threshold, color='r', linestyle='--', label=f'-{threshold}')
-        plt.title(f'Spearman Correlation with {target_variable}')
-        plt.tight_layout()
+        plt.axhline(y=threshold, color='r', linestyle='--')
+        plt.axhline(y=-threshold, color='r', linestyle='--')
+        plt.title('Pearson Correlation Coefficients with {}'.format(target_var))
         plt.show()
 
-      def on_apply_sp(b):
-        with spearman_corr_tab:
-          clear_output()
-          display(widgets.HBox([threshold_slider_sp, btn_sp]))
-          display(widgets.HBox([btn_remove_sp, btn_revert_sp]))
-          draw_spearman(threshold_slider_sp.value)
-          display(spearman_out)
+      # Create the widget to select the threshold
+      threshold_slider = widgets.FloatSlider(
+          value=0.1,
+          min=0,
+          max=1,
+          step=0.01,
+          description='Threshold:',
+          orientation='horizontal'
+      )
 
-      def on_remove_sp(b):
-        threshold = threshold_slider_sp.value
-        corr = df.drop(target_variable, axis=1).apply(
-            lambda x: x.corr(df[target_variable], method='spearman'))
-        to_drop = corr[abs(corr) < threshold].index.tolist()
+      # threshold_output = widgets.Output()
+
+      # def threshold_slider_eventhandler(change):
+      #   pearson_corr_tab.clear_output()
+      #   threshold = change.new
+      #   with threshold_output:
+      #     create_corr_plot(threshold)
+      #     threshold_slider.value = threshold
+      #     display(widgets.HBox([threshold_slider, button_remove, button_revert]))
+
+      # # Register the function as an event handler for the threshold slider
+      # threshold_slider.observe(threshold_slider_eventhandler, names='value')
+
+      # create a button to confirm the threshold and re-generate the plot
+      button_threshold = widgets.Button(description='Confirm Threshold',
+                        layout=widgets.Layout(width='25%', height='30px'),
+                        button_style = 'success')
+
+      # Create the button widget to confirm the selection of the threshold
+      button_remove = widgets.Button(description='Remove features',
+                                     button_style = 'success')
+      button_revert = widgets.Button(description='Revert',
+                                    icon='reply',
+                                    button_style='warning')
+
+      # create the output widgets
+      output_remove = widgets.Output()
+      output_revert = widgets.Output()
+      # create a dictionary to map buttons to their corresponding output widgets
+      output_dict = {button_remove: output_remove, button_revert: output_revert}
+
+
+
+
+      # Define the output widget to display the plot and confirmation message
+      pearson_out = widgets.Output()
+
+      def on_button_threshold_clicked(b):
+        threshold = threshold_slider.value
+
+        with pearson_corr_tab:
+          clear_output() # clear all existing outputs in the current tab
+
+          threshold_slider.value = threshold
+          display(widgets.HBox([threshold_slider, button_threshold]))
+          display(widgets.HBox([button_remove, button_revert]))
+          create_corr_plot(threshold)
+
+          print("The threshold of Pearson Correlation is set to be {}.".format(threshold))
+
+        #pearson_out.clear_output()
+        # with pearson_out:
+        #   clear_output()
+        #   plt.clf()
+        #   create_corr_plot(threshold)
+        #   print("The threshold of Pearson Correlation is set to be {}.".format(threshold))
+        #   #display(pearson_out)
+
+      button_threshold.on_click(on_button_threshold_clicked)
+
+      # Define a function to remove the variables with correlation less than the threshold
+      def remove_variables(threshold):
+          # Compute the Pearson correlation coefficients between the variables and the target variable
+          df = self.data
+          corr = df.drop(target_var, axis=1).apply(lambda x: x.corr(df[target_var]))
+          corr_vars = corr[abs(corr) < threshold].index.tolist()
+          df_corr = df.drop(columns = corr_vars)
+          return df_corr
+
+
+      # Define a function to handle the button click event
+      def on_button_remove_clicked(b):
+        threshold = threshold_slider.value
+        #create_corr_plot(threshold)
         self.data_copy = self.data
-        self.data = self.data.drop(columns=to_drop)
-        with spearman_out:
-          spearman_out.clear_output()
-          display(Markdown(f"Removed {len(to_drop)} feature(s): `{', '.join(to_drop)}`"))
+        self.data = remove_variables(threshold) # update the dataset attribute of the class
+        #  clear_output()
+        with output_dict[b]:
+          #with output_dict[button_revert]:
+          display('Features with correlations less than {} have been removed.'.format(threshold))
+
+          display(self.data)
+        with pearson_corr_tab:
+         display(output_dict[b])
+
+      def on_button_revert_clicked(b):
+          self.data = self.data_copy
+          # clear the output generated by button1
+          with output_dict[button_remove]:
+            clear_output()
+          #with output_dict[b]:
+          display('The removed features are added back to the dataset.')
+
+          display(self.data)
+          #display(output_dict[b])
+
+      # Attach the button click event to the button widgets
+      button_remove.on_click(on_button_remove_clicked)
+      button_revert.on_click(on_button_revert_clicked)
+
+
+      display(widgets.HBox([threshold_slider, button_threshold]))
+      display(widgets.HBox([button_remove, button_revert]))
+      create_corr_plot(threshold_slider.value)
+
+      #display(output_remove)
+      #display(output_revert)
+
+      # Create an output widget for printing the confirmation message and updated dataset
+      #pearson_out = widgets.Output()
+
+      # Display the correlation and widgets
+
+      #pearson_widget = widgets.HBox([threshold_slider, button_threshold])
+      #feature_widget = widgets.HBox([button_remove, button_revert])
+      #display(widgets.HBox([button_remove, button_revert]))
+      #display(widgets.VBox([pearson_widget, feature_widget]))
+      #create_corr_plot(threshold_slider.value)
+      #display(pearson_out)
+
+
+######################### TAB #################################
+    # display spearman correlation and correlation heatmap
+    # Handling Multicollinear Features
+    spearman_corr_tab.clear_output()
+    with spearman_corr_tab:
+      df = self.data
+    target_variable = self.target
+    num_vars = df.drop(columns=[target_variable]).select_dtypes(include=[np.number]).columns
+
+    spearman_out = widgets.Output()
+
+    threshold_slider_sp = widgets.FloatSlider(
+        value=0.1, min=0, max=1, step=0.01, description='Threshold:')
+    btn_sp = widgets.Button(description='Apply Threshold', button_style='success')
+    btn_remove_sp = widgets.Button(description='Remove Features', button_style='success')
+    btn_revert_sp = widgets.Button(description='Revert', icon='reply', button_style='warning')
+
+    def draw_spearman(threshold=0.1):
+      corr = df[num_vars].apply(lambda x: x.corr(df[target_variable], method='spearman'))
+      pos = corr[abs(corr) >= threshold]
+      neg = corr[abs(corr) < threshold]
+      plt.clf()
+      plt.figure(figsize=(10, 6))
+      plt.bar(neg.index, neg.values, color='grey')
+      plt.bar(pos.index, pos.values, color='steelblue')
+      plt.xticks(rotation=90)
+      plt.axhline(threshold, color='r', linestyle='--', label=f'+{threshold}')
+      plt.axhline(-threshold, color='r', linestyle='--', label=f'-{threshold}')
+      plt.title(f'Spearman Correlation with {target_variable}')
+      plt.tight_layout()
+      plt.show()
+
+    def on_apply_sp(b):
+      with spearman_corr_tab:
+        clear_output()
+        display(widgets.HBox([threshold_slider_sp, btn_sp]))
+        display(widgets.HBox([btn_remove_sp, btn_revert_sp]))
+        draw_spearman(threshold_slider_sp.value)
+        display(spearman_out)
+
+    def on_remove_sp(b):
+      threshold = threshold_slider_sp.value
+      corr = df.drop(target_variable, axis=1).apply(
+          lambda x: x.corr(df[target_variable], method='spearman'))
+      to_drop = corr[abs(corr) < threshold].index.tolist()
+      self.data_copy = self.data
+      self.data = self.data.drop(columns=to_drop)
+      with spearman_out:
+        spearman_out.clear_output()
+        display(Markdown(f"Removed {len(to_drop)} feature(s): `{', '.join(to_drop)}`"))
+        display(self.data)
+
+    def on_revert_sp(b):
+      self.data = self.data_copy
+      with spearman_out:
+        spearman_out.clear_output()
+        display(Markdown("Reverted — all features restored."))
+
+    btn_sp.on_click(on_apply_sp)
+    btn_remove_sp.on_click(on_remove_sp)
+    btn_revert_sp.on_click(on_revert_sp)
+
+    display(widgets.HBox([threshold_slider_sp, btn_sp]))
+    display(widgets.HBox([btn_remove_sp, btn_revert_sp]))
+    draw_spearman(threshold_slider_sp.value)
+    display(spearman_out)
+
+######################### TAB #################################
+    # display permutation based feature importance
+    importance_tab.clear_output()
+    with importance_tab:
+      # take attributes from the main class
+      df = self.data
+      target_variable = self.target
+      test_ratio = self.test_ratio
+      random_state = self.random
+      # declare the feature importance which will be used by multiple functions
+      global feature_importance
+
+      # creat an output to display the results within the tab
+      output_importance = widgets.Output()
+
+      def perm_importance(df, fitter):
+        # First drop any rows with missing values. Note: this will be refined later
+        #df = self.data
+        df = df.dropna()
+        # get numerical variables
+        num_vars = df.select_dtypes(include=['float64', 'int64']).columns
+        # get categorical variables
+        cat_vars = df.select_dtypes(include=['object', 'category', 'bool']).columns
+
+        if num_vars.empty or cat_vars.empty:
+          # With no numerical or categorical variable at all, no need to encode
+          df_encoded = df
+        else:
+        # apply label encoding to the categorical variables
+          le = LabelEncoder()
+          df_cat_encoded = df[cat_vars].apply(le.fit_transform)
+          # create a new dataset with the original numerical variables and encoded categorical variables
+          df_encoded = pd.concat([df[num_vars], df_cat_encoded], axis=1)
+
+        X = df_encoded.drop(target_variable, axis=1)
+        y = df_encoded[target_variable]
+        # split the data into training/validation and test sets
+        # Using the global test size ratio and random state to ensure consistency
+        X_trainval, X_test, y_trainval, y_test = train_test_split(X, y,
+                                                            test_size= test_ratio,
+                                                            random_state=random_state)
+        # split the training/validation set into training and validation sets
+        # test ratio set to be 0.25
+        # the importance feature is tested on the validation dataset
+        X_train, X_val, y_train, y_val = train_test_split(X_trainval, y_trainval,
+                                                          test_size=0.25,
+                                                          random_state=42)
+
+        # train the fitter with the training data
+        fitter.fit(X_train, y_train)
+        # calculate permuation importance using the fitted model based on validation dataset
+        #for i in tqdm(range(100), desc='Processing...', unit='%'):
+        #print("Calculating permuation based feature importance...")
+        perm_importance = permutation_importance(fitter, X_val, y_val, n_jobs=-1, random_state=42)
+
+        #print("done.")
+
+        return perm_importance
+
+      #display('check')
+      def perm_importance_plot(perm_importance, threshold=0.1):
+        # display the importance scores in a bar chart
+        feature_importance = perm_importance.importances_mean
+
+        X = df.drop(target_variable, axis=1)
+        feature_names = X.columns
+        sorted_idx = feature_importance.argsort()
+
+        with output_importance:
+          plt.barh(range(len(sorted_idx)), feature_importance[sorted_idx])
+          plt.yticks(range(len(sorted_idx)), feature_names[sorted_idx])
+          plt.axvline(x=threshold, color='r', linestyle='--')
+          plt.title('Permutation Importance based on {}'.format(fitter_dropdown.value))
+          plt.xlabel('Feature Importance Score')
+          plt.show()
+
+      # Create a dropdown widget for choosing the fitter
+      fitter_list = ['logistic regression',
+                    'random forest',
+                    'gradient boosting machine',
+                    'isolation forest']
+      fitter_dropdown = widgets.Dropdown(
+        options=['select a fitter']+ fitter_list,
+        description='Fitter:',
+        value = 'select a fitter')
+
+      # Create a button widget to confirm the fitter
+      fitter_confirm_button = widgets.Button(description='Confirm',
+                                      button_style='success')
+
+      # create a progress bar for calculating feature importance
+      progress_bar = widgets.IntProgress(
+                        value=1,
+                        min=0,
+                        max=10,
+                        step=1,
+                        description='Calculating:',
+                        bar_style='success',  # 'success', 'info', 'warning', 'danger' or ''
+                        orientation='horizontal')
+
+      # Define a function to handle the button click event
+      def on_button_fitter_click(b):
+        #global fitter
+        if fitter_dropdown.value == 'choose a fitter':
+          print('Please choose a fitter.')
+          return
+        elif fitter_dropdown.value == 'logistic regresssion':
+          fitter = LogisticRegression()
+        elif fitter_dropdown.value == 'random forest':
+          fitter = RandomForestRegressor(n_estimators=100, max_samples = 0.2,
+                                        random_state=42)
+        elif fitter_dropdown.value == 'gradient boosting machine':
+          fitter = GradientBoostingClassifier(n_estimators = 100, learning_rate=0.1,
+                                              max_depth = 7,
+                                              random_state = 42)
+        elif fitter_dropdown.value == 'isolation forest':
+          fitter = IsolationForest(n_estimators= 100, max_samples= 0.2,
+                                  random_state=42)
+
+        with output_importance:
+          display(Markdown('The fitter is chosen to be {}.'.format(fitter_dropdown.value)))
+          # set the width of the description
+          #int_progress.layout.width = '500px'
+
+          display(progress_bar)
+          # start with a new line (otherwise it won't display properly)
+          output_importance.append_stdout('\n')
+
+          for i in range(9):
+            if i==0:
+              global importance # delcare as global variable to be used by other functions
+
+              importance = perm_importance(self.data, fitter)
+
+            # Update the progress bar as the program runs
+            time.sleep(0.2)
+            progress_bar.value = i+2
+
+          # plot the feature importance bar chart
+          # start with a new line (otherwise it won't display properly)
+          #output_importance.append_stdout('\n')
+          perm_importance_plot(perm_importance = importance)
+
+      # Attach the button click event to the button widget
+      fitter_confirm_button.on_click(on_button_fitter_click)
+
+
+      # Create the widget to select the threshold
+      threshold_importance_slider = widgets.FloatSlider(
+          value=0.1,
+          min=0,
+          max=1,
+          step=0.01,
+          description='Threshold:',
+          orientation='horizontal')
+
+      # create a button widget to increase slider value
+      increase_button = widgets.Button(description='+',
+                                      button_style='primary',
+                                      layout=widgets.Layout(width='auto'))
+
+      # create a button widget to decrease slider value
+      decrease_button = widgets.Button(description='-',
+                                      button_style='primary',
+                                      layout=widgets.Layout(width='auto'))
+
+
+      # define functions to increase and decrease slider value
+      def increase_slider_value(b):
+          threshold_importance_slider.value += 0.01
+
+      def decrease_slider_value(b):
+          threshold_importance_slider.value -= 0.01
+
+      # link button widgets to functions
+      increase_button.on_click(increase_slider_value)
+      decrease_button.on_click(decrease_slider_value)
+
+
+      # create a button to confirm the threshold and re-generate the plot
+      threshold_importance_button = widgets.Button(description='Confirm Threshold',
+                          #layout=widgets.Layout(width='25%', height='30px')
+                          button_style='success')
+
+      # define action when click the button
+      def on_threshold_importance_button_click(b):
+        if fitter_dropdown.value =='choose a fitter':
+          print('Please choose a fitter.')
+          return
+        else:
+          threshold_importance = threshold_importance_slider.value
+
+          # clear the previous output
+          output_importance.clear_output()
+
+          with output_importance:
+            perm_importance_plot(importance, threshold = threshold_importance)
+
+      # attached the action to the button
+      threshold_importance_button.on_click(on_threshold_importance_button_click)
+
+      # create a horizontal box to hold the slider and buttons
+      threshold_slider_box = widgets.HBox([decrease_button,
+                                           threshold_importance_slider,
+                                           increase_button,
+                                           ],
+                                layout=widgets.Layout(justify_content='center', align_items='center'))
+
+      # create a button to remove the variables with low feature importance
+      feature_remove_button = widgets.Button(description='Remove Features',
+                          #layout=widgets.Layout(width='25%', height='30px')
+                          button_style = 'success')
+
+      feature_revert_button = widgets.Button(description='Revert',
+                                    icon='reply',
+                                    button_style='warning')
+
+      # create the output widgets
+      output_remove = widgets.Output()
+      output_revert = widgets.Output()
+      # create a dictionary to map buttons to their corresponding output widgets
+      output_dict = {button_remove: output_remove, button_revert: output_revert}
+
+      # Define a function to remove the variables with importance less than the threshold
+      def remove_variables(threshold):
+        df = self.data
+        #make a copy of the current dataset
+        self.data_copy = self.data
+
+        # Take the importance score from the global variable
+        importance_score = importance.importances_mean
+
+        X = df.drop(target_variable, axis=1)
+        #y = df[target_variable]
+
+        cols_to_keep = importance_score >= threshold
+        cols_to_remove = X.columns[~cols_to_keep]
+        updated_df = df.drop(cols_to_remove, axis=1)
+        #cols_to_remove = importance_score < threshold
+        #df = df.drop(columns = cols_to_remove)
+
+        return updated_df
+
+      # Define a function to handle the button click event
+      def on_button_remove_clicked(b):
+        threshold = threshold_importance_slider.value
+
+        # update the dataset attribute of the class
+        self.data = remove_variables(threshold)
+
+        #  clear_output()
+        with output_remove:
+          #with output_dict[button_revert]:
+          print('Features with Importance Score less than {} have been removed.'.format(threshold))
+
           display(self.data)
 
-      def on_revert_sp(b):
-        self.data = self.data_copy
-        with spearman_out:
-          spearman_out.clear_output()
-          display(Markdown("Reverted — all features restored."))
+        with importance_tab:
+         display(output_remove)
 
-      btn_sp.on_click(on_apply_sp)
-      btn_remove_sp.on_click(on_remove_sp)
-      btn_revert_sp.on_click(on_revert_sp)
-
-      display(widgets.HBox([threshold_slider_sp, btn_sp]))
-      display(widgets.HBox([btn_remove_sp, btn_revert_sp]))
-      draw_spearman(threshold_slider_sp.value)
-      display(spearman_out)
-
-  ######################### TAB #################################
-      # display permutation based feature importance
-      importance_tab.clear_output()
-      with importance_tab:
-        # take attributes from the main class
-        df = self.data
-        target_variable = self.target
-        test_ratio = self.test_ratio
-        random_state = self.random
-        # declare the feature importance which will be used by multiple functions
-        global feature_importance
-
-        # creat an output to display the results within the tab
-        output_importance = widgets.Output()
-
-        def perm_importance(df, fitter):
-          # First drop any rows with missing values. Note: this will be refined later
-          #df = self.data
-          df = df.dropna()
-          # get numerical variables
-          num_vars = df.select_dtypes(include=['float64', 'int64']).columns
-          # get categorical variables
-          cat_vars = df.select_dtypes(include=['object', 'category', 'bool']).columns
-
-          if num_vars.empty or cat_vars.empty:
-            # With no numerical or categorical variable at all, no need to encode
-            df_encoded = df
-          else:
-          # apply label encoding to the categorical variables
-            le = LabelEncoder()
-            df_cat_encoded = df[cat_vars].apply(le.fit_transform)
-            # create a new dataset with the original numerical variables and encoded categorical variables
-            df_encoded = pd.concat([df[num_vars], df_cat_encoded], axis=1)
-
-          X = df_encoded.drop(target_variable, axis=1)
-          y = df_encoded[target_variable]
-          # split the data into training/validation and test sets
-          # Using the global test size ratio and random state to ensure consistency
-          X_trainval, X_test, y_trainval, y_test = train_test_split(X, y,
-                                                              test_size= test_ratio,
-                                                              random_state=random_state)
-          # split the training/validation set into training and validation sets
-          # test ratio set to be 0.25
-          # the importance feature is tested on the validation dataset
-          X_train, X_val, y_train, y_val = train_test_split(X_trainval, y_trainval,
-                                                            test_size=0.25,
-                                                            random_state=42)
-
-          # train the fitter with the training data
-          fitter.fit(X_train, y_train)
-          # calculate permuation importance using the fitted model based on validation dataset
-          #for i in tqdm(range(100), desc='Processing...', unit='%'):
-          #print("Calculating permuation based feature importance...")
-          perm_importance = permutation_importance(fitter, X_val, y_val, n_jobs=-1, random_state=42)
-
-          #print("done.")
-
-          return perm_importance
-
-        #display('check')
-        def perm_importance_plot(perm_importance, threshold=0.1):
-          # display the importance scores in a bar chart
-          feature_importance = perm_importance.importances_mean
-
-          X = df.drop(target_variable, axis=1)
-          feature_names = X.columns
-          sorted_idx = feature_importance.argsort()
-
-          with output_importance:
-            plt.barh(range(len(sorted_idx)), feature_importance[sorted_idx])
-            plt.yticks(range(len(sorted_idx)), feature_names[sorted_idx])
-            plt.axvline(x=threshold, color='r', linestyle='--')
-            plt.title('Permutation Importance based on {}'.format(fitter_dropdown.value))
-            plt.xlabel('Feature Importance Score')
-            plt.show()
-
-        # Create a dropdown widget for choosing the fitter
-        fitter_list = ['logistic regression',
-                      'random forest',
-                      'gradient boosting machine',
-                      'isolation forest']
-        fitter_dropdown = widgets.Dropdown(
-          options=['select a fitter']+ fitter_list,
-          description='Fitter:',
-          value = 'select a fitter')
-
-        # Create a button widget to confirm the fitter
-        fitter_confirm_button = widgets.Button(description='Confirm',
-                                        button_style='success')
-
-        # create a progress bar for calculating feature importance
-        progress_bar = widgets.IntProgress(
-                          value=1,
-                          min=0,
-                          max=10,
-                          step=1,
-                          description='Calculating:',
-                          bar_style='success',  # 'success', 'info', 'warning', 'danger' or ''
-                          orientation='horizontal')
-
-        # Define a function to handle the button click event
-        def on_button_fitter_click(b):
-          #global fitter
-          if fitter_dropdown.value == 'choose a fitter':
-            print('Please choose a fitter.')
-            return
-          elif fitter_dropdown.value == 'logistic regresssion':
-            fitter = LogisticRegression()
-          elif fitter_dropdown.value == 'random forest':
-            fitter = RandomForestRegressor(n_estimators=100, max_samples = 0.2,
-                                          random_state=42)
-          elif fitter_dropdown.value == 'gradient boosting machine':
-            fitter = GradientBoostingClassifier(n_estimators = 100, learning_rate=0.1,
-                                                max_depth = 7,
-                                                random_state = 42)
-          elif fitter_dropdown.value == 'isolation forest':
-            fitter = IsolationForest(n_estimators= 100, max_samples= 0.2,
-                                    random_state=42)
-
-          with output_importance:
-            display(Markdown('The fitter is chosen to be {}.'.format(fitter_dropdown.value)))
-            # set the width of the description
-            #int_progress.layout.width = '500px'
-
-            display(progress_bar)
-            # start with a new line (otherwise it won't display properly)
-            output_importance.append_stdout('\n')
-
-            for i in range(9):
-              if i==0:
-                global importance # delcare as global variable to be used by other functions
-
-                importance = perm_importance(self.data, fitter)
-
-              # Update the progress bar as the program runs
-              time.sleep(0.2)
-              progress_bar.value = i+2
-
-            # plot the feature importance bar chart
-            # start with a new line (otherwise it won't display properly)
-            #output_importance.append_stdout('\n')
-            perm_importance_plot(perm_importance = importance)
-
-        # Attach the button click event to the button widget
-        fitter_confirm_button.on_click(on_button_fitter_click)
-
-
-        # Create the widget to select the threshold
-        threshold_importance_slider = widgets.FloatSlider(
-            value=0.1,
-            min=0,
-            max=1,
-            step=0.01,
-            description='Threshold:',
-            orientation='horizontal')
-
-        # create a button widget to increase slider value
-        increase_button = widgets.Button(description='+',
-                                        button_style='primary',
-                                        layout=widgets.Layout(width='auto'))
-
-        # create a button widget to decrease slider value
-        decrease_button = widgets.Button(description='-',
-                                        button_style='primary',
-                                        layout=widgets.Layout(width='auto'))
-
-
-        # define functions to increase and decrease slider value
-        def increase_slider_value(b):
-            threshold_importance_slider.value += 0.01
-
-        def decrease_slider_value(b):
-            threshold_importance_slider.value -= 0.01
-
-        # link button widgets to functions
-        increase_button.on_click(increase_slider_value)
-        decrease_button.on_click(decrease_slider_value)
-
-
-        # create a button to confirm the threshold and re-generate the plot
-        threshold_importance_button = widgets.Button(description='Confirm Threshold',
-                            #layout=widgets.Layout(width='25%', height='30px')
-                            button_style='success')
-
-        # define action when click the button
-        def on_threshold_importance_button_click(b):
-          if fitter_dropdown.value =='choose a fitter':
-            print('Please choose a fitter.')
-            return
-          else:
-            threshold_importance = threshold_importance_slider.value
-
-            # clear the previous output
-            output_importance.clear_output()
-
-            with output_importance:
-              perm_importance_plot(importance, threshold = threshold_importance)
-
-        # attached the action to the button
-        threshold_importance_button.on_click(on_threshold_importance_button_click)
-
-        # create a horizontal box to hold the slider and buttons
-        threshold_slider_box = widgets.HBox([decrease_button,
-                                             threshold_importance_slider,
-                                             increase_button,
-                                             ],
-                                  layout=widgets.Layout(justify_content='center', align_items='center'))
-
-        # create a button to remove the variables with low feature importance
-        feature_remove_button = widgets.Button(description='Remove Features',
-                            #layout=widgets.Layout(width='25%', height='30px')
-                            button_style = 'success')
-
-        feature_revert_button = widgets.Button(description='Revert',
-                                      icon='reply',
-                                      button_style='warning')
-
-        # create the output widgets
-        output_remove = widgets.Output()
-        output_revert = widgets.Output()
-        # create a dictionary to map buttons to their corresponding output widgets
-        output_dict = {button_remove: output_remove, button_revert: output_revert}
-
-        # Define a function to remove the variables with importance less than the threshold
-        def remove_variables(threshold):
-          df = self.data
-          #make a copy of the current dataset
-          self.data_copy = self.data
-
-          # Take the importance score from the global variable
-          importance_score = importance.importances_mean
-
-          X = df.drop(target_variable, axis=1)
-          #y = df[target_variable]
-
-          cols_to_keep = importance_score >= threshold
-          cols_to_remove = X.columns[~cols_to_keep]
-          updated_df = df.drop(cols_to_remove, axis=1)
-          #cols_to_remove = importance_score < threshold
-          #df = df.drop(columns = cols_to_remove)
-
-          return updated_df
-
-        # Define a function to handle the button click event
-        def on_button_remove_clicked(b):
-          threshold = threshold_importance_slider.value
-
-          # update the dataset attribute of the class
-          self.data = remove_variables(threshold)
-
-          #  clear_output()
+      def on_button_revert_clicked(b):
+          self.data = self.data_copy
+          # clear the output generated by the remove button
           with output_remove:
-            #with output_dict[button_revert]:
-            print('Features with Importance Score less than {} have been removed.'.format(threshold))
+            clear_output()
+
+          with output_revert:
+            print('The removed features are added back to the dataset.')
 
             display(self.data)
 
           with importance_tab:
-           display(output_remove)
+            display(output_revert)
 
-        def on_button_revert_clicked(b):
-            self.data = self.data_copy
-            # clear the output generated by the remove button
-            with output_remove:
-              clear_output()
+      # Attach the button click event to the button widgets
+      feature_remove_button.on_click(on_button_remove_clicked)
+      feature_revert_button.on_click(on_button_revert_clicked)
 
-            with output_revert:
-              print('The removed features are added back to the dataset.')
+      # create widget boxes
+      fitter_widget = widgets.HBox([fitter_dropdown, fitter_confirm_button])
+      threshold_widget = widgets.HBox([threshold_slider_box, threshold_importance_button])
+      feature_remove_widget = widgets.HBox([feature_remove_button, feature_revert_button])
+      # display widgets
+      display(widgets.VBox([fitter_widget,
+                          threshold_widget,
+                          feature_remove_widget]))
 
-              display(self.data)
-
-            with importance_tab:
-              display(output_revert)
-
-        # Attach the button click event to the button widgets
-        feature_remove_button.on_click(on_button_remove_clicked)
-        feature_revert_button.on_click(on_button_revert_clicked)
-
-        # create widget boxes
-        fitter_widget = widgets.HBox([fitter_dropdown, fitter_confirm_button])
-        threshold_widget = widgets.HBox([threshold_slider_box, threshold_importance_button])
-        feature_remove_widget = widgets.HBox([feature_remove_button, feature_revert_button])
-        # display widgets
-        display(widgets.VBox([fitter_widget,
-                            threshold_widget,
-                            feature_remove_widget]))
-
-        display(output_importance)
+      display(output_importance)
 
   def model_training(self):
     df = self.data
@@ -2058,204 +2058,280 @@ class ValidationFramework:
 
 
 
-    def model_diagnose(self):
-      df = self.data
-      test_ratio = self.test_ratio
-      random_state = self.random
-      task = self.task
-      target_var = self.target
+  def model_diagnose(self):
+    df = self.data
+    test_ratio = self.test_ratio
+    random_state = self.random
+    task = self.task
+    target_var = self.target
 
-      X = df.drop(target_var, axis=1)
-      y = df[target_var]
+    X = df.drop(target_var, axis=1)
+    y = df[target_var]
 
-      # Split dataset into training (60%), calibration(20%), and test sets(20%)
-      X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.4, random_state=42)
-      X_cal, X_test, y_cal, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
+    # Split dataset into training (60%), calibration(20%), and test sets(20%)
+    X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.4, random_state=42)
+    X_cal, X_test, y_cal, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
 
-      feature_names = np.array(X_train.columns) # get feature names
+    feature_names = np.array(X_train.columns) # get feature names
 
-      models = self.register  # load the dictionary of registered model(s)
+    models = self.register  # load the dictionary of registered model(s)
 
-      if not models:
-        print("There is no model registered.")
-        return
+    if not models:
+      print("There is no model registered.")
+      return
 
-      # define a main output
-      output_main = widgets.Output()
+    # define a main output
+    output_main = widgets.Output()
 
-      # Widget to select model
-      model_select = widgets.Dropdown(options= list(models.keys()),
-                                      description='Registered models:',
-                                      )
+    # Widget to select model
+    model_select = widgets.Dropdown(options= list(models.keys()),
+                                    description='Registered models:',
+                                    )
 
-      # selected model from registration
-      model = models[model_select.value]
+    # selected model from registration
+    model = models[model_select.value]
 
-      # identify categorical columns of the dataset
-      categorical_cols = X.select_dtypes(include=['category', 'object']).columns
+    # identify categorical columns of the dataset
+    categorical_cols = X.select_dtypes(include=['category', 'object']).columns
 
-      # apply OneHotEndcoder when categortical feasures exist (need to improve this part later)
-      if len(categorical_cols) > 0:
-        preprocessor = ColumnTransformer(transformers=[
-        ('cat', OneHotEncoder(), categorical_cols)  # Assume `categorical_columns` is defined
-        ])
+    # apply OneHotEndcoder when categortical feasures exist (need to improve this part later)
+    if len(categorical_cols) > 0:
+      preprocessor = ColumnTransformer(transformers=[
+      ('cat', OneHotEncoder(), categorical_cols)  # Assume `categorical_columns` is defined
+      ])
 
-        # model pipeline
-        model = Pipeline(steps=[
-            ('preprocessor', preprocessor),
-            ('model', model)
-        ])
-
-
-      # Re-fit the model with the new training data and testing data
-      model.fit(X_train, y_train)
+      # model pipeline
+      model = Pipeline(steps=[
+          ('preprocessor', preprocessor),
+          ('model', model)
+      ])
 
 
-      # Measure strangeness on the calibration set
-      if task == 'classification':
-        cal_probas = model.predict_proba(X_cal)
-        cal_strangeness = 1 - cal_probas[np.arange(len(y_cal)), y_cal]
+    # Re-fit the model with the new training data and testing data
+    model.fit(X_train, y_train)
 
-        # Predict on the test set and measure strangeness
-        test_probas = model.predict_proba(X_test)
 
-        '''
-        By selecting only the probabilities for class 1 ([:, 1]),
-        we are specifically looking at how well our model is calibrated for detecting the positive class (e.g.,"default").
-        This is often the class of greater interest in such medical scenarios,
-        so we might only plot the reliability diagram for this class to see how well our probabilities align with the actual outcomes.
-        '''
-        test_probs_class1 = model.predict_proba(X_test)[:, 1]
-        test_strangeness = 1 - test_probas.max(axis=1)
+    # Measure strangeness on the calibration set
+    if task == 'classification':
+      cal_probas = model.predict_proba(X_cal)
+      cal_strangeness = 1 - cal_probas[np.arange(len(y_cal)), y_cal]
 
-      if task == 'regression':
-        # Get predicted values and residuals for the calibration set
-        cal_pred = model.predict(X_cal)
-        cal_residuals = np.abs(cal_pred - y_cal)
+      # Predict on the test set and measure strangeness
+      test_probas = model.predict_proba(X_test)
 
-        # Get predicted values and residuals for the test set
-        test_pred = model.predict(X_test)
-        test_residuals = np.abs(test_pred - y_test)
+      '''
+      By selecting only the probabilities for class 1 ([:, 1]),
+      we are specifically looking at how well our model is calibrated for detecting the positive class (e.g.,"default").
+      This is often the class of greater interest in such medical scenarios,
+      so we might only plot the reliability diagram for this class to see how well our probabilities align with the actual outcomes.
+      '''
+      test_probs_class1 = model.predict_proba(X_test)[:, 1]
+      test_strangeness = 1 - test_probas.max(axis=1)
 
-      # diplay the widgets initially
-      with output_main:
-        display(HTML(f"<h3>Select a model:"))
-        display(model_select)
+    if task == 'regression':
+      # Get predicted values and residuals for the calibration set
+      cal_pred = model.predict(X_cal)
+      cal_residuals = np.abs(cal_pred - y_cal)
 
-      display(output_main)
+      # Get predicted values and residuals for the test set
+      test_pred = model.predict(X_test)
+      test_residuals = np.abs(test_pred - y_test)
 
-      # create tabs
-      reliability_tab = widgets.Output() # reliability
-      accuracy_tab = widgets.Output()  # accuacy
-      overfit_tab = widgets.Output()    # overfit/underfit
-      weakspot_tab = widgets.Output()    # weakness spot
-      resiliency_tab = widgets.Output()  # resiliency
-      robust_tab = widgets.Output()      #robustness
-      fairness_tab = widgets.Output()    # fairness
-      tabs = widgets.Tab(children=[accuracy_tab,
-                                  reliability_tab,
-                                   overfit_tab,
-                                   weakspot_tab,
-                                   resiliency_tab,
-                                   robust_tab,
-                                   fairness_tab])
-      tabs.set_title(0, 'Accuracy')
-      tabs.set_title(1, 'Reliability')
-      tabs.set_title(2, 'Overfit')
-      tabs.set_title(3, 'Weak Spot')
-      tabs.set_title(4, 'Resiliency')
-      tabs.set_title(5, 'Robustness')
-      tabs.set_title(6, 'Fairness')
+    # diplay the widgets initially
+    with output_main:
+      display(HTML(f"<h3>Select a model:"))
+      display(model_select)
 
-      display(tabs)
+    display(output_main)
 
-      def on_change_global(change):
-        if change['name'] == 'value' and (change['new'] != change['old']):
-          #clear_output(wait=True)
-          #display(model_select)
-          #with global_tab:
-          #output_local.clear_output()
-          #pdp_tab.clear_output()
+    # create tabs
+    reliability_tab = widgets.Output() # reliability
+    accuracy_tab = widgets.Output()  # accuacy
+    overfit_tab = widgets.Output()    # overfit/underfit
+    weakspot_tab = widgets.Output()    # weakness spot
+    resiliency_tab = widgets.Output()  # resiliency
+    robust_tab = widgets.Output()      #robustness
+    fairness_tab = widgets.Output()    # fairness
+    tabs = widgets.Tab(children=[accuracy_tab,
+                                reliability_tab,
+                                 overfit_tab,
+                                 weakspot_tab,
+                                 resiliency_tab,
+                                 robust_tab,
+                                 fairness_tab])
+    tabs.set_title(0, 'Accuracy')
+    tabs.set_title(1, 'Reliability')
+    tabs.set_title(2, 'Overfit')
+    tabs.set_title(3, 'Weak Spot')
+    tabs.set_title(4, 'Resiliency')
+    tabs.set_title(5, 'Robustness')
+    tabs.set_title(6, 'Fairness')
+
+    display(tabs)
+
+    def on_change_global(change):
+      if change['name'] == 'value' and (change['new'] != change['old']):
+        #clear_output(wait=True)
+        #display(model_select)
+        #with global_tab:
+        #output_local.clear_output()
+        #pdp_tab.clear_output()
+        reliability_output.clear_output()
+
+        progress_bar = widgets.IntProgress(
+            value=1,
+            min=1,
+            max=10,
+            step=1,
+            description='Calculating',
+            bar_style='success',  # 'success', 'info', 'warning', 'danger' or ''
+            #orientation='horizontal'
+            )
+
+        with output_main:
+          display(progress_bar)
+
+        # Get the selected model and confidence level
+        model = models[change['new']]
+        #model = models[model_select.value]
+
+        # Re-fit the model with the new training data and testing data
+        model.fit(X_train, y_train)
+
+        # prepare the datasets for testing and calibration
+        if task == 'classification':
+          cal_probas = model.predict_proba(X_cal)
+          cal_strangeness = 1 - cal_probas[np.arange(len(y_cal)), y_cal]
+
+          # Predict on the test set and measure strangeness
+          test_probas = model.predict_proba(X_test)
+
+          '''
+          By selecting only the probabilities for class 1 ([:, 1]),
+          we are specifically looking at how well our model is calibrated for detecting the positive class (e.g.,"default").
+          This is often the class of greater interest in such medical scenarios,
+          so we might only plot the reliability diagram for this class to see how well our probabilities align with the actual outcomes.
+          '''
+          test_probs_class1 = model.predict_proba(X_test)[:, 1]
+          test_strangeness = 1 - test_probas.max(axis=1)
+
+        if task == 'regression':
+          # Get predicted values and residuals for the calibration set
+          cal_pred = model.predict(X_cal)
+          cal_residuals = np.abs(cal_pred - y_cal)
+
+          # Get predicted values and residuals for the test set
+          test_pred = model.predict(X_test)
+          test_residuals = np.abs(test_pred - y_test)
+
+        # Update the progress bar
+        progress_bar.value +=1
+
+        with reliability_tab:
           reliability_output.clear_output()
 
-          progress_bar = widgets.IntProgress(
-              value=1,
-              min=1,
-              max=10,
-              step=1,
-              description='Calculating',
-              bar_style='success',  # 'success', 'info', 'warning', 'danger' or ''
-              #orientation='horizontal'
-              )
+          with reliability_output:
+           reliability_plot()
 
-          with output_main:
-            display(progress_bar)
+          display(reliability_output)
 
-          # Get the selected model and confidence level
-          model = models[change['new']]
-          #model = models[model_select.value]
+        # Update the progress bar
+        progress_bar.value +=1
 
-          # Re-fit the model with the new training data and testing data
-          model.fit(X_train, y_train)
+        # Close the progress bar
+        progress_bar.close()
 
-          # prepare the datasets for testing and calibration
-          if task == 'classification':
-            cal_probas = model.predict_proba(X_cal)
-            cal_strangeness = 1 - cal_probas[np.arange(len(y_cal)), y_cal]
+    # Attach the update function to the widgets
+    model_select.observe(on_change_global, names='value')
+    #alpha_slider.observe(on_change_global, names='value')
 
-            # Predict on the test set and measure strangeness
-            test_probas = model.predict_proba(X_test)
+    # define metrics
+    metric_functions = {
+        'ACC': accuracy_score,
+        'AUC': roc_auc_score,
+        'F1': f1_score,
+        'MSE': mean_squared_error,
+        'MAE': mean_absolute_error,
+        'R2': r2_score
+    }
 
-            '''
-            By selecting only the probabilities for class 1 ([:, 1]),
-            we are specifically looking at how well our model is calibrated for detecting the positive class (e.g.,"default").
-            This is often the class of greater interest in such medical scenarios,
-            so we might only plot the reliability diagram for this class to see how well our probabilities align with the actual outcomes.
-            '''
-            test_probs_class1 = model.predict_proba(X_test)[:, 1]
-            test_strangeness = 1 - test_probas.max(axis=1)
+    def evaluate_score(y_true, y_pred, metric, threshold=0.5):
+      # Convert probabilities to binary class labels based on the threshold
+      if metric not in metric_functions:
+          raise ValueError(f"Unsupported metric: {metric}")
 
-          if task == 'regression':
-            # Get predicted values and residuals for the calibration set
-            cal_pred = model.predict(X_cal)
-            cal_residuals = np.abs(cal_pred - y_cal)
+      if task == 'classification' and metric == 'AUC':
+          if len(np.unique(y_true)) == 2:
+              return metric_functions[metric](y_true, y_pred) # AUC uses probabilities, not labels
+          else:
+              # Return a default score or np.nan if not both classes are present
+              return 0.5  # a random guess
 
-            # Get predicted values and residuals for the test set
-            test_pred = model.predict(X_test)
-            test_residuals = np.abs(test_pred - y_test)
+      if task == 'classification' and metric in ['ACC', 'F1']:
+        y_pred_labels = (y_pred >= threshold).astype(int)
 
-          # Update the progress bar
-          progress_bar.value +=1
+        if metric == 'F1':
+              # Handle the case where there are no positive predictions or labels
+              return metric_functions[metric](y_true, y_pred_labels, zero_division=0)
+        else:
+              return metric_functions[metric](y_true, y_pred_labels)
+      else:
+          return metric_functions[metric](y_true, y_pred)  # regression metric
 
-          with reliability_tab:
-            reliability_output.clear_output()
+################# Resiliency #####################
 
-            with reliability_output:
-             reliability_plot()
+    # Dictionary to store the metric functions
+    if task == 'classification':
+      y_pred = model.predict_proba(X_test)[:, 1] # predicted probabilities
+    elif task == 'regression':
+      y_pred = model.predict(X_test) # predicted values
 
-            display(reliability_output)
+    # Calculate the PSI for a single variable
+    def calculate_psi(expected_array, actual_array, buckettype='bins', buckets=10, axis=0):
+      def scale_range (input, min, max):
+          input += -(np.min(input))
+          input /= np.max(input) / (max - min)
+          input += min
+          return input
 
-          # Update the progress bar
-          progress_bar.value +=1
+      breakpoints = np.arange(0, buckets + 1) / (buckets) * 100
 
-          # Close the progress bar
-          progress_bar.close()
+      if buckettype == 'bins':
+          breakpoints = scale_range(breakpoints, np.min(expected_array), np.max(expected_array))
+      elif buckettype == 'quantiles':
+          breakpoints = np.stack([np.percentile(expected_array, b) for b in breakpoints])
 
-      # Attach the update function to the widgets
-      model_select.observe(on_change_global, names='value')
-      #alpha_slider.observe(on_change_global, names='value')
+      expected_percents = np.histogram(expected_array, breakpoints)[0] / len(expected_array)
+      actual_percents = np.histogram(actual_array, breakpoints)[0] / len(actual_array)
 
-      # define metrics
-      metric_functions = {
-          'ACC': accuracy_score,
-          'AUC': roc_auc_score,
-          'F1': f1_score,
-          'MSE': mean_squared_error,
-          'MAE': mean_absolute_error,
-          'R2': r2_score
-      }
+      def sub_psi(e_perc, a_perc):
+          ''' Calculate the actual PSI value from comparing the values.
+              Update the actual value to a very small number if equal to zero
+          '''
+          if a_perc == 0:
+              a_perc = 0.0001
+          if e_perc == 0:
+              e_perc = 0.0001
 
-      def evaluate_score(y_true, y_pred, metric, threshold=0.5):
+          return (e_perc - a_perc) * np.log(e_perc / a_perc)
+
+      psi_value = np.sum(np.fromiter((sub_psi(expected_percents[i], actual_percents[i]) for i in range(len(expected_percents))), dtype=float))
+      #psi_value = np.sum(sub_psi(expected_percents[i], actual_percents[i]) for i in range(0, len(expected_percents)))
+
+      return psi_value
+
+    '''
+    # define metrics
+    metric_functions = {
+        'ACC': accuracy_score,
+        'AUC': roc_auc_score,
+        'F1': f1_score,
+        'MSE': mean_squared_error,
+        'MAE': mean_absolute_error,
+        'R2': r2_score
+    }
+
+    def evaluate_score(y_true, y_pred, metric, threshold=0.5):
         # Convert probabilities to binary class labels based on the threshold
         if metric not in metric_functions:
             raise ValueError(f"Unsupported metric: {metric}")
@@ -2277,1264 +2353,1188 @@ class ValidationFramework:
                 return metric_functions[metric](y_true, y_pred_labels)
         else:
             return metric_functions[metric](y_true, y_pred)  # regression metric
-
-  ################# Resiliency #####################
-
-      # Dictionary to store the metric functions
-      if task == 'classification':
-        y_pred = model.predict_proba(X_test)[:, 1] # predicted probabilities
-      elif task == 'regression':
-        y_pred = model.predict(X_test) # predicted values
-
-      # Calculate the PSI for a single variable
-      def calculate_psi(expected_array, actual_array, buckettype='bins', buckets=10, axis=0):
-        def scale_range (input, min, max):
-            input += -(np.min(input))
-            input /= np.max(input) / (max - min)
-            input += min
-            return input
-
-        breakpoints = np.arange(0, buckets + 1) / (buckets) * 100
-
-        if buckettype == 'bins':
-            breakpoints = scale_range(breakpoints, np.min(expected_array), np.max(expected_array))
-        elif buckettype == 'quantiles':
-            breakpoints = np.stack([np.percentile(expected_array, b) for b in breakpoints])
-
-        expected_percents = np.histogram(expected_array, breakpoints)[0] / len(expected_array)
-        actual_percents = np.histogram(actual_array, breakpoints)[0] / len(actual_array)
-
-        def sub_psi(e_perc, a_perc):
-            ''' Calculate the actual PSI value from comparing the values.
-                Update the actual value to a very small number if equal to zero
-            '''
-            if a_perc == 0:
-                a_perc = 0.0001
-            if e_perc == 0:
-                e_perc = 0.0001
-
-            return (e_perc - a_perc) * np.log(e_perc / a_perc)
-
-        psi_value = np.sum(np.fromiter((sub_psi(expected_percents[i], actual_percents[i]) for i in range(len(expected_percents))), dtype=float))
-        #psi_value = np.sum(sub_psi(expected_percents[i], actual_percents[i]) for i in range(0, len(expected_percents)))
-
-        return psi_value
-
       '''
-      # define metrics
-      metric_functions = {
-          'ACC': accuracy_score,
-          'AUC': roc_auc_score,
-          'F1': f1_score,
-          'MSE': mean_squared_error,
-          'MAE': mean_absolute_error,
-          'R2': r2_score
-      }
 
-      def evaluate_score(y_true, y_pred, metric, threshold=0.5):
-          # Convert probabilities to binary class labels based on the threshold
-          if metric not in metric_functions:
-              raise ValueError(f"Unsupported metric: {metric}")
-
-          if task == 'classification' and metric == 'AUC':
-              if len(np.unique(y_true)) == 2:
-                  return metric_functions[metric](y_true, y_pred) # AUC uses probabilities, not labels
-              else:
-                  # Return a default score or np.nan if not both classes are present
-                  return 0.5  # a random guess
-
-          if task == 'classification' and metric in ['ACC', 'F1']:
-            y_pred_labels = (y_pred >= threshold).astype(int)
-
-            if metric == 'F1':
-                  # Handle the case where there are no positive predictions or labels
-                  return metric_functions[metric](y_true, y_pred_labels, zero_division=0)
-            else:
-                  return metric_functions[metric](y_true, y_pred_labels)
-          else:
-              return metric_functions[metric](y_true, y_pred)  # regression metric
-        '''
-
-      def get_worst_cluster(n_clusters = 10, metric = 'AUC'):
-          if metric not in metric_functions:
-              raise ValueError(f"Unsupported metric: {metric}")
-
-          scaler = StandardScaler()
-          X_test_scaled = scaler.fit_transform(X_test)
-          X_test_scaled = pd.DataFrame(X_test_scaled, columns=X_train.columns)  # Keep the feature names
-
-          # Apply K-means clustering
-          kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10).fit(X_test_scaled)
-          # Predict clusters for the test set
-          clusters = kmeans.predict(X_test_scaled)
-          # Evaluate the performance of the model on each cluster
-          cluster_scores = []
-          for cluster in range(n_clusters):
-              cluster_indices = np.where(clusters == cluster)[0]
-              score = evaluate_score(y_test.iloc[cluster_indices], y_pred[cluster_indices], metric)
-              cluster_scores.append((cluster, score))
-
-          # Sort clusters by score and select the worst performing cluster
-          worst_cluster, worst_score = sorted(cluster_scores, key=lambda x: x[1])[0]
-          #worst_cluster = sorted(cluster_scores, key=lambda x: x[1])[0][0]
-
-          # Indices of the worst performing cluster
-          worst_cluster_indices = np.where(clusters == worst_cluster)[0]
-
-          return worst_cluster_indices, worst_score
-
-      # Define the function for the worst cluster analysis
-      def plot_worst_cluster(metric='AUC', max_k=10):
-          if metric not in metric_functions:
+    def get_worst_cluster(n_clusters = 10, metric = 'AUC'):
+        if metric not in metric_functions:
             raise ValueError(f"Unsupported metric: {metric}")
 
-          worst_scores = []
-          k_values = list(range(2, max_k + 1))
-
-          # Perform KMeans clustering and identify the worst cluster for each K
-          for k in k_values:
-              _, worst_score = get_worst_cluster(k, metric)
-              worst_scores.append(worst_score)
-
-          # Plot the worst cluster performance
-          plt.figure(figsize=(10, 6))
-          plt.plot(k_values, worst_scores, marker='o')
-          plt.axhline(evaluate_score(y_test, y_pred, metric), color='red', linestyle='--', label='Overall Test Performance')
-          plt.xticks(k_values)
-          plt.xlabel('Number of Clusters (K)')
-          plt.ylabel(metric)
-          plt.title(f'Worst Cluster Performance by Number of Clusters ({metric})')
-          plt.legend()
-          plt.grid(True)
-          plt.show()
-
-      def get_worst_samples(alpha, immu_feature=None):
-          y_pred_copy = pd.Series(y_pred, index=X_test.index)
-          residuals = np.abs(y_pred_copy - y_test)
-
-          worst_indices = []
-
-          if immu_feature is not None and immu_feature in X_test.columns:
-              X_test_copy = X_test.copy()
-              X_test_copy['bin'], bins = pd.qcut(X_test_copy[immu_feature], q=10, retbins=True, duplicates='drop')
-
-              for bin_label in X_test_copy['bin'].unique():
-                  bin_indices = X_test_copy[X_test_copy['bin'] == bin_label].index
-
-                  # Calculate residuals for the current bin
-                  residuals_bin = residuals.loc[bin_indices]
-
-                  # Sort and select worst samples within the bin
-                  sorted_indices_bin = np.argsort(-residuals_bin)[:int(alpha * len(bin_indices))]
-                  worst_indices.extend(bin_indices[sorted_indices_bin])
-          else:
-              # For the case without an immutable feature
-              sorted_indices = residuals.index[np.argsort(-residuals)[:int(alpha * len(y_test))]]
-              worst_indices.extend(sorted_indices)
-              #print(worst_indices)
-
-          return worst_indices
-
-
-      # Define the function for resilience analysis
-      def resilience_score(metric='AUC', alpha=0.1, immu_feature=None):
-          # Check if the metric is supported
-          if metric not in metric_functions:
-              raise ValueError(f"Unsupported metric: {metric}")
-
-          worst_indices = get_worst_samples(alpha, immu_feature)
-          y_test_worst = y_test.loc[worst_indices]
-          #y_pred_worst = y_pred[worst_indices]
-
-          #y_test_worst = y_test[worst_indices]
-          y_pred_copy = pd.Series(y_pred, index=X_test.index)
-          y_pred_worst = y_pred_copy.loc[worst_indices]
-
-          score = evaluate_score(y_test_worst, y_pred_worst, metric)
-
-          return score
-
-      def plot_resilience(metric='AUC', immu_feature=None):
-          performance_scores = []
-          alpha_values = np.arange(0.1, 1.1, 0.1)  # from 0.1 to 1.0
-
-          # Calculate performance for varying worst sample ratios
-          for alpha in alpha_values:
-            worest_score = resilience_score(metric=metric, alpha=alpha, immu_feature = immu_feature)
-            performance_scores.append(worest_score)
-
-          # Plotting the performance scores
-          plt.figure(figsize=(10, 6))
-          plt.plot(alpha_values, performance_scores, label='Worst Sample Performance')
-
-          # Plot the performance on the entire test set
-          overall_score = evaluate_score(y_test, y_pred, metric)
-
-          plt.axhline(overall_score, color='red', linestyle='--', label='Overall Test Performance')
-
-          plt.xlabel('Worst Sample Ratio')
-          plt.ylabel(metric)
-          plt.title(f'Model Performance under Worst Sample Scenario ({metric})')
-          plt.legend()
-          plt.show()
-
-      def plot_resilience_distance(method='worst-sample', distance_metric='PSI', alpha=0.1, top_k = 10, immu_feature=None):
-        # top_k: top k features to display
-          if method == 'worst-sample':
-              worst_indices = get_worst_samples(alpha, immu_feature)
-              X_worst = X_test.loc[worst_indices]
-          elif method == 'worst-cluster':
-              worst_indices,_ = get_worst_cluster(n_clusters = 10, metric = 'AUC')
-              X_worst = X_test.iloc[worst_indices]
-
-          feature_distances = {}
-
-          for feature in X_test.columns:
-              expected = X_test[feature]
-              actual = X_worst[feature]
-
-              if distance_metric == 'PSI':
-                  distance = calculate_psi(expected, actual)
-              elif distance_metric == 'WD1':
-                  distance = wasserstein_distance(expected, actual)
-              elif distance_metric == 'KS':
-                  distance = ks_2samp(expected, actual)[0]  # Just the statistic, not the p-value
-              else:
-                  raise ValueError("Unsupported distance_metric")
-
-              feature_distances[feature] = distance
-
-          # Sort features by distance and select top_k
-          sorted_features = sorted(feature_distances.items(), key=lambda x: x[1], reverse=True)[:top_k]
-
-          # Display the top features with their distances
-          #print(f"Top {top_k} features with largest {distance_metric} distance under {method} method:")
-          #for feature, distance in sorted_features:
-          #   print(f"{feature}: {distance}")
-
-          # Plot the top features with their distances
-          features, distances = zip(*sorted_features)
-          plt.figure(figsize=(10, 6))
-          plt.barh(features, distances, color='skyblue')
-          plt.xlabel('Distance Measure')
-          plt.ylabel('Features')
-          plt.title(f'Top {top_k} Features by {distance_metric} Distance')
-          plt.gca().invert_yaxis()  # Invert y-axis to have the largest bar on top
-          plt.show()
-
-
-      # Define Widgets
-      method_widget = widgets.Dropdown(
-          options=['worst-sample',
-                  'worst-cluster'],  # Add more methods as they are implemented
-          value='worst-sample',
-          description='Method:',
-          disabled=False,
-      )
-
-      metric_classification_widget = widgets.Dropdown(
-          options=['ACC', 'AUC', 'F1'],
-          value='ACC',
-          description='Metric:',
-          disabled=False,
-      )
-
-      metric_regression_widget = widgets.Dropdown(
-          options=['MSE', 'MAE', 'R2'],
-          value='MSE',
-          description='Metric:',
-          disabled=False,
-      )
-
-      worst_ratio_widget = widgets.FloatSlider(
-          value=0.1,
-          min=0,
-          max=1.0,
-          step=0.1,
-          description='Worst Ratio:',
-          disabled=False,
-          continuous_update=False,
-          orientation='horizontal',
-          readout=True,
-          readout_format='.1f',
-      )
-
-      # Define the dropdown widget for the distance measure
-      distance_measure_widget = widgets.Dropdown(
-          options=['PSI', 'WD1', 'KS'],
-          value='PSI',
-          description='Distance Measure:',
-          disabled=False,
-      )
-
-      # Container widget to dynamically display the correct metric options
-      metric_widget = widgets.VBox([metric_classification_widget])
-
-      # Create a dropdown for selecting the immutable feature
-      immu_feature_widget = widgets.Dropdown(
-          options=[None] + list(X.columns),
-          value=None,
-          description='Immutable Feature:',
-          disabled=False,
-      )
-
-      # Function to update metric options based on task
-      def update_metric_options():
-          if task == 'classification':
-              metric_widget.children = [metric_classification_widget]
-          elif task == 'regression':
-              metric_widget.children = [metric_regression_widget]
-
-      # Button to run the analysis
-      run_button = widgets.Button(description="Run Analysis",
-                                  button_style='success')
-
-      # Function to handle button click event
-      output_resilient = widgets.Output() # output for the resilient plots
-
-      def on_run_button_clicked(b):
-          output_resilient.clear_output()
-
-          method = method_widget.value
-          metric = metric_widget.children[0].value
-          worst_ratio = worst_ratio_widget.value
-          immu_feature = immu_feature_widget.value
-          distance_metric = distance_measure_widget.value
-          # Call your resilience_analysis function here with the selected options
-          with output_resilient:
-            if method == 'worst-sample':
-              plot_resilience(metric, immu_feature)
-              plot_resilience_distance(method, distance_metric, worst_ratio, top_k = 10, immu_feature=immu_feature)
-            if method == 'worst-cluster':
-              plot_worst_cluster(metric)
-              plot_resilience_distance(method, distance_metric, worst_ratio, top_k = 10, immu_feature=immu_feature)
-
-      run_button.on_click(on_run_button_clicked)
-
-      # Display widgets
-      widget_inputs_1 = widgets.HBox([method_widget, metric_widget, immu_feature_widget])
-      widget_inputs_2 = widgets.HBox([distance_measure_widget, worst_ratio_widget])
-
-      with resiliency_tab:
-        display(widgets.VBox([widget_inputs_1,
-                            widget_inputs_2,
-                            run_button]))
-
-        display(output_resilient)
-
-
-  ################# Reliability #####################
-      # Create widgets
-      alpha_slider = widgets.FloatSlider(value=0.95, min=0, max=1.0, step=0.01, description='alpha:')
-      plus_button = widgets.Button(description='+',
-                                  button_style='primary',
-                                  layout=widgets.Layout(width='25px'))
-
-      minus_button = widgets.Button(description='-',
-                                    button_style='primary',
-                                    layout=widgets.Layout(width='25px'))
-
-      ui = widgets.HBox([alpha_slider, minus_button, plus_button])
-
-      # Update function for the buttons
-      def increment(b):
-          alpha_slider.value = min(alpha_slider.value + 0.01, 1.0)
-
-      def decrement(b):
-          alpha_slider.value = max(alpha_slider.value - 0.01, 0.0)
-
-      plus_button.on_click(lambda b: increment(b))
-      minus_button.on_click(lambda b: decrement(b))
-
-      def on_change_reliability(change):
-        if change['name'] == 'value' and (change['new'] != change['old']):
-          #clear_output(wait=True)
-          #display(model_select)
-          #with global_tab:
-          reliability_output.clear_output()
-          #output_local.clear_output()
-          #pdp_tab.clear_output()
-
-          # Get the selected model and confidence level
-          #model = models[change['new']]
-          #model = models[model_select.value]
-
-          # Re-fit the model with the new training data and testing data
-          #model.fit(X_train, y_train)
-          # prepare the datasets for testing and calibration
-          #data_prepare()
-
-          with reliability_tab:
-            with reliability_output:
-             reliability_plot()
-            display(reliability_output)
-
-      # Attach the update function to the widgets
-      alpha_slider.observe(on_change_reliability, names='value')
-
-      with reliability_tab:
-        # Display the widgets
-        message = widgets.HTML(f"<h3>Select Confidence Level:")
-        #display(message)
-        display(widgets.VBox([message, ui]))
-
-      out_widget = widgets.Output() # an output to hold the plot
-      def plot_conformal_classification(alpha=0.95):
-        with out_widget:
-          out_widget.clear_output(wait=True)
-          plt.figure(figsize=(16, 6))
-
-          # Calculate the cutoff based on alpha and calibration strangeness
-          cutoff = np.percentile(cal_strangeness, 100 * (alpha))
-
-          '''
-          # Plot calibration set strangeness scores
-          plt.subplot(1, 3, 1)
-          plt.hist(strangeness, bins=30, label='Calibration strangeness', alpha=0.7)
-          plt.axvline(x=cutoff, color='r', linestyle='--', label=f'Cutoff at alpha={alpha}')
-          plt.xlabel('Strangeness')
-          plt.ylabel('Count')
-          plt.legend()
-          '''
-
-          # Plot strangeness distribution for the test set
-          plt.subplot(1, 2, 1)
-          plt.hist(test_strangeness, bins=30, label='Test set strangeness', alpha=0.7)
-          plt.axvline(x=cutoff, color='r', linestyle='--', label=f'Cutoff at alpha={alpha:.2f}')
-          plt.xlabel('Strangeness')
-          plt.ylabel('Count')
-          plt.title('Distribution of Strangeness for Test Set')
-          plt.legend()
-
-          # Scatter plot for test set
-          plt.subplot(1, 2, 2)
-          conformal_idx = test_strangeness <= cutoff  # Conformal points are below or equal to the cutoff
-          non_conformal_idx = ~conformal_idx
-          plt.scatter(np.arange(len(test_strangeness))[conformal_idx], test_strangeness[conformal_idx], color='g', label=f'Conformal ({conformal_idx.mean() * 100:.2f}%)')
-          plt.scatter(np.arange(len(test_strangeness))[non_conformal_idx], test_strangeness[non_conformal_idx], color='r', label=f'Non-Conformal ({non_conformal_idx.mean() * 100:.2f}%)')
-          plt.axhline(y=cutoff, color='b', linestyle='--', label='Cutoff')
-          plt.xlabel('Test instances')
-          plt.ylabel('Strangeness')
-          plt.title('Confomarl vs. Non-conformal Points in Test Set')
-          plt.legend()
-
-          #plt.tight_layout()
-          plt.show()
-
-      #out2_widget = widgets.Output()
-      def plot_conformal2_classification():
-      #with out2_widget:
-        #out2_widget.clear_output(wait=True)
-
-        # Calculate p-values for test instances
-        p_values = [(cal_strangeness >= t_s).mean() for t_s in test_strangeness]
-
-        plt.figure(figsize=(16, 6))
-
-        plt.subplot(1, 2, 1)
-        # Visualize p-values distribution
-        plt.hist(p_values, bins=10, edgecolor='k', alpha=0.7, density=True)
-        plt.xlabel('P-value')
-        plt.ylabel('Density')
-        plt.title('Distribution of P-values for Test Set')
-
-        # Calculate the normalized instance indices for the calibration and test sets
-        cal_indices_norm = np.arange(len(cal_strangeness)) / len(cal_strangeness)
-        test_indices_norm = np.arange(len(test_strangeness)) / len(test_strangeness)
-
-        plt.subplot(1, 2, 2)
-        # Visualize calibration set vs. test set strangeness
-        plt.scatter(cal_indices_norm, np.sort(cal_strangeness), label='Calibration Strangeness', s=50)
-        plt.scatter(test_indices_norm, np.sort(test_strangeness), label='Test Strangeness', s=50, alpha=0.6)
-        plt.xlabel('Normalized Instances (sorted by strangeness)')
-        plt.ylabel('Strangeness')
-        plt.title('Strangeness of Calibration vs. Test Set')
-        plt.legend()
-        plt.show()
-
-      def plot_reliability_classification(y_true, y_probs, n_bins=10, ax=None):
-          prob_true, prob_pred = calibration_curve(y_true, y_probs, n_bins=n_bins)
-
-          if ax is None:
-              plt.figure(figsize=(8, 8))
-              ax = plt.gca()
-
-          ax.plot([0, 1], [0, 1], 'k:', label='Perfectly calibrated')
-          ax.plot(prob_pred, prob_true, 's-', label='Model')
-          ax.set_xlabel('Mean predicted probability')
-          ax.set_ylabel('Fraction of positives')
-          ax.set_title('Reliability Diagram')
-          ax.legend()
-          plt.show()
-
-      def plot_conformal_regression(alpha=0.90):
-          # Calculate the cutoff based on alpha and calibration residuals
-          cutoff = np.percentile(cal_residuals, 100 * (alpha))
-
-          plt.figure(figsize=(16, 6))
-
-          # Identify which residuals are within the cutoff
-          within_cutoff = test_residuals <= cutoff
-          outside_cutoff = ~within_cutoff
-
-          # Calculate the percentage of test points that are green
-          percent_within_cutoff = np.mean(within_cutoff) * 100
-          percent_outside_cutoff = 100- percent_within_cutoff
-
-          # Scatter plot for predicted values (blue dots)
-          plt.scatter(np.arange(len(test_pred)), test_pred, c='b', s=30, label='Prediction')
-
-          # Scatter plot for true test values (green dots when within interval, red dots when outside)
-          plt.scatter(np.arange(len(test_pred))[within_cutoff], y_test[within_cutoff],
-                      c='g', s=30, zorder=5, label=f'Within interval ({percent_within_cutoff:.2f}%)')
-          plt.scatter(np.arange(len(test_pred))[outside_cutoff], y_test[outside_cutoff],
-                      c='r', s=30, zorder=5, label=f'Outside interval ({percent_outside_cutoff:.2f}%)')
-
-          # Prediction intervals (blue bars)
-          plt.errorbar(np.arange(len(test_pred)), test_pred, yerr=cutoff, fmt='none', ecolor='gray', elinewidth=1)
-
-          plt.xlabel('Index')
-          plt.ylabel('Value')
-          plt.title(f'Conformal Prediction (alpha={alpha*100:.2f}%)')
-          plt.legend()
-
-          # Display the percentage of test points that are green on the plot
-          #plt.text(0.7 * len(test_pred), min(test_pred), f'{percent_within_cutoff:.2f}% within interval',
-          #         fontsize=12, ha='center')
-
-          plt.show()
-
-      def plot_predicted_vs_actual(y_true, y_pred):
-        # Create figure and a grid of subplots
-        fig, axs = plt.subplots(1, 2, figsize=(16, 8))
-        """
-        Plots a scatter plot comparing the true and predicted values for regression.
-        """
-        ax = axs[0]
-        ax.scatter(y_true, y_pred, alpha=0.5)
-        ax.plot([min(y_true), max(y_true)], [min(y_true), max(y_true)], 'r--')
-        ax.set_xlabel('True Values')
-        ax.set_ylabel('Predicted Values')
-        ax.set_title('Predicted vs Actual Values')
-
-        """
-        Plots a histogram of the residuals (true value - predicted value) for regression.
-        """
-        residuals = y_true - y_pred
-        ax=axs[1]
-        ax.hist(residuals, bins=30, alpha=0.5, edgecolor='k')
-        ax.axvline(x=0, color='r', linestyle='--')
-        ax.set_xlabel('Residuals')
-        ax.set_ylabel('Frequency')
-        ax.set_title('Distribution of Residuals')
-
-        # Show plots
-        plt.tight_layout()
-        plt.show()
-
-      # combine all reliability plots
-      def reliability_plot():
-        if task == "classification":
-          # plot conformal prediction
-          out = widgets.interactive_output(plot_conformal_classification, {'alpha': alpha_slider})
-          display(out)
-          display(out_widget)
-
-          # plot conformal prediction (p-value)
-          plot_conformal2_classification()
-
-          # Plot reliability diagram
-          plot_reliability_classification(y_test, test_probs_class1)
-        elif task == "regression":
-          # plot the conformal prediction plot
-          plot_conformal_regression(alpha=alpha_slider.value)
-
-          # plot the prediction vs. actual and residual diagrams
-          plot_predicted_vs_actual(y_test, test_pred)
-        else:
-          print("Task is missing.")
-
-      # Display the outputs
-      reliability_output = widgets.Output()
-      with reliability_tab:
-        with reliability_output:
-          reliability_plot()
-        display(reliability_output)
-  ############## Weak Spot ######################
-      # Reset the indices of X_test and y_test to align them
-      X_test1 = X_test.reset_index(drop=True)
-      y_test1 = pd.Series(y_test).reset_index(drop=True)
-
-      predictions = model.predict(X_test1)
-
-      # Create 'accuracy_bool' column to indicate correct predictions
-      X_test1['accuracy_bool'] = predictions == y_test1.values
-
-      # Fit and visualize a decision tree
-      def fit_and_visualize_dt(df, predictors, show = False):
-          X = df[predictors]
-          y = df['accuracy_bool']
-          tree = DecisionTreeClassifier(max_depth=3, criterion='entropy', random_state=1)
-          tree.fit(X, y)
-
-          '''
-          viz = dtreeviz(
-              model,
-              X,
-              y,
-              target_name='accuracy_bool',
-              feature_names=predictors,
-              class_names=["True", "False"]
-          )
-          viz.view()  # This will open the decision tree visualization
-          '''
-          # Visualize the Decision Tree
-          if show == True:
-            feature1 = predictors[0]
-            feature2 = predictors[1]
-            plt.figure(figsize=(15, 10))
-            plot_tree(tree, filled=True, feature_names=predictors, class_names=['True', 'False'], rounded=True)
-            plt.title(f"Decision Tree Based on {feature1} & {feature2}")
-            plt.show()
-
-          return tree
-
-      def find_weak_spots_and_leaves(model, df, predictors, threshold = 0.05):
-          leaf_ids = model.apply(df[predictors])
-          t = model.tree_
-          baseline_acc = np.mean(df['accuracy_bool'])
-          #print(baseline_acc)
-
-          segments = defaultdict(list)
-          weak_spots = {}
-
-          for idx in set(leaf_ids):
-              leaf_indices = np.where(leaf_ids == idx)[0]
-              segments[idx] = leaf_indices
-
-              if len(leaf_indices) < 5:
-                  continue
-
-              leaf_acc = np.mean(df['accuracy_bool'].iloc[leaf_indices])
-              if baseline_acc- leaf_acc > threshold:
-                  weak_spots[idx] = leaf_indices
-
-          return weak_spots, segments
-
-      def get_leaf_accuracies(model, df, predictors):
-        leaf_ids = model.apply(df[predictors])
-        t = model.tree_
-        leaf_accuracies = {}
-
-        for idx in set(leaf_ids):
-            leaf_indices = np.where(leaf_ids == idx)[0]
-            #if len(leaf_indices) < 5:
-            #    continue
-            leaf_accuracies[idx] = np.mean(df['accuracy_bool'].iloc[leaf_indices])
-
-        return leaf_accuracies
-
-      # Generate a colormap. For instance, let's use the 'Reds' colormap.
-      cmap = plt.get_cmap('Reds')
-
-      def plot_decision_tree_segment(model, df, predictors):
-          leaf_ids = model.apply(df[predictors])
-          df['segment'] = leaf_ids  # Add the segment column to df
-          baseline_acc = np.mean(df['accuracy_bool'])
-
-          segments = defaultdict(list)
-
-          # Calculate the accuracy for each segment/leaf
-          leaf_accuracies = {}
-          for idx in set(leaf_ids):
-              leaf_indices = np.where(leaf_ids == idx)[0]
-              segments[idx] = leaf_indices
-
-              #if len(leaf_indices) < 5:
-              # continue
-              leaf_acc = np.mean(df['accuracy_bool'].iloc[leaf_indices])
-              leaf_accuracies[idx] = leaf_acc
-              #print(leaf_acc)
-
-          # Create a dataframe to map each segment to its accuracy
-          df_leaf = df[predictors + ['segment']].copy()
-          df_leaf['accuracy'] = df_leaf['segment'].map(leaf_accuracies)
-
-          # Visualization for two features
-          unique_segments = df_leaf['segment'].unique()
-          plt.figure(figsize=(12, 10))
-
-          for segment in unique_segments:
-              segment_data = df_leaf[df_leaf['segment'] == segment]
-
-              if len(segment_data) >= 5:  # Only plot segments with 5 or more data points
-                plt.scatter(segment_data[predictors[0]], segment_data[predictors[1]],
-                          label=f'Segment {segment} - Accuracy: {leaf_accuracies[segment]:.4f}')
-
-          plt.xlabel(predictors[0])
-          plt.ylabel(predictors[1])
-          plt.legend()
-          plt.title(f'Accuracy by {predictors[0]} and {predictors[1]} segments')
-          plt.show()
-
-      # plot one-way weak spot
-      def plot_one_way_segments_and_weak_spots_heatmap(feature1):
-          predictors = [feature1]
-          model = fit_and_visualize_dt(X_test1, predictors)  # Assuming this function trains and returns a model
-          weak_spots, segments = find_weak_spots_and_leaves(model, X_test1, predictors, threshold=0.1)  # Assuming this function identifies weak spots and leaves
-
-          plt.figure(figsize=(10, 6))
-
-          feature_data = X_test1[feature1]
-          total_samples = len(feature_data)
-
-          # Get accuracies for each leaf node
-          leaf_accuracies = get_leaf_accuracies(model, X_test1, predictors)  # Assuming this function calculates and returns leaf accuracies
-
-          cmap = cm.get_cmap('coolwarm')  # Get the colormap
-
-          # Plot histogram-like bars based on the segments from the decision tree
-          for leaf_idx, indices in segments.items():
-              leaf_accuracy = leaf_accuracies.get(leaf_idx, 1)  # Default to accuracy=1 if not found
-              color_value = cmap(leaf_accuracy)  # Use accuracy to map to colors
-
-              # Here we assume `segments` provides indices; you can change this to actual value ranges if needed
-              min_val = feature_data.iloc[indices].min()
-              max_val = feature_data.iloc[indices].max()
-              frequency = len(indices)
-              frequency_percent = (frequency / total_samples) * 100  # Frequency percentage
-
-              plt.bar(min_val, height=frequency, width=max_val-min_val, color=color_value, align='edge')
-
-              # Add frequency percentage text above the bar
-              plt.text(min_val, frequency, f"{frequency_percent:.2f}%", ha='left', va='bottom')
-
-              # Mark the bar with leaf ID if it's a weak spot
-              if leaf_idx in weak_spots:
-                plt.text((min_val + max_val) / 2, frequency / 2, str(leaf_idx), ha='center', va='center', color='red')
-
-          plt.title(f"One-Way Weak Spot for {feature1}")
-          plt.xlabel(feature1)
-          plt.ylabel("Frequency")
-          plt.colorbar(cm.ScalarMappable(norm=mcolors.Normalize(0, 1), cmap=cmap), label="Accuracy")
-
-          plt.show()
-
-          if weak_spots:
-            dot_data = tree.export_graphviz(model, out_file=None,
-                                            feature_names=predictors,
-                                            class_names=['True', 'False'],
-                                            filled=True, rounded=True,
-                                            special_characters=True, node_ids=True,
-                                          )
-            # Add a label (title) to the DOT source code
-            title = f"Decision Tree Based on {feature1}"
-            #dot_data_with_title = f'digraph Tree {{\nsize="4,4"; \nlabel="{title}";\nlabelloc=t;\nlabeljust=l;\nfontsize=8;\nfontname=Helvetica;\n{dot_data[dot_data.index("{") + 1:]}'
-            #dot_data_with_title = f'digraph Tree {{\ngraph [size="4,4"];\nnode [fontsize=8];\nlabel="{title}";\nlabelloc=t;\nlabeljust=l;\nfontsize=8;\nfontname=Helvetica;\n{dot_data[dot_data.index("{") + 1:]}'
-            dot_data_with_title = f'digraph Tree {{\nlabel="{title}";\nlabelloc=t;\nnode [fontsize=8];\nlabeljust=c;\nfontsize=12;\nfontname=Helvetica;\n{dot_data[dot_data.index("{") + 1:]}'
-
-            graph = graphviz.Source(dot_data_with_title)
-            display(graph)
-
-      # Function to plot two-way weak spots
-      def plot_segments_and_weak_spots_heatmap(feature1, feature2):
-          predictors = [feature1, feature2]
-          model = fit_and_visualize_dt(X_test1, predictors)
-          weak_spots, segments = find_weak_spots_and_leaves(model, X_test1, predictors, threshold = 0.1)
-
-          plt.figure(figsize=(10, 10))
-
-          feature1_min, feature1_max = X_test1[feature1].min(), X_test1[feature1].max()
-          feature2_min, feature2_max = X_test1[feature2].min(), X_test1[feature2].max()
-
-          # Get accuracies for each leaf node. This is a mock-up example; replace with your actual function.
-          leaf_accuracies = get_leaf_accuracies(model, X_test1, predictors)
-
-          for leaf_idx, indices in segments.items():
-            leaf_accuracy = leaf_accuracies.get(leaf_idx)  # Default to accuracy=1 if not found
-            color_value = cmap(1 - leaf_accuracy)  # 1 - accuracy to map lower accuracies to darker colors
-
-            #feature1_range = get_range_of_feature(tree, X_test[feature1], leaf_idx, 0)
-            #feature2_range = get_range_of_feature(tree, X_test[feature2], leaf_idx, 1)
-
-            #plt.fill_betweenx(feature2_range, feature1_range[0], feature1_range[1], color=color_value, alpha=0.5)
-
-            feature1_range = (X_test1[feature1].iloc[indices].min(), X_test1[feature1].iloc[indices].max())
-            feature2_range = (X_test1[feature2].iloc[indices].min(), X_test1[feature2].iloc[indices].max())
-
-            plt.fill_betweenx(feature2_range, feature1_range[0], feature1_range[1], color=color_value, alpha=1)
-
-            if leaf_idx in weak_spots:
-                plt.text(np.mean(feature1_range), np.mean(feature2_range), str(leaf_idx), fontsize=12, color='red')
-
-          plt.xlim([feature1_min, feature1_max])
-          plt.ylim([feature2_min, feature2_max])
-          plt.xlabel(feature1)
-          plt.ylabel(feature2)
-          plt.title(f"Two-Way Weak Spots for {feature1} & {feature2}")
-          plt.show()
-
-          # Conditionally show the decision tree plot if weak_spots are not empty
-          if weak_spots:
-            #print(weak_spots)
-            plot_decision_tree_segment(model, X_test1, predictors)
-
-            dot_data = tree.export_graphviz(model, out_file=None,
-                                feature_names=predictors,
-                                class_names=['True', 'False'],
-                                filled=True, rounded=True,
-                                special_characters=True, node_ids=True,
-                                )
-            # Add a label (title) to the DOT source code
-            title = f"Decision Tree Based on {feature1} & {feature2}"
-            dot_data_with_title = f'digraph Tree {{\nlabel="{title}"; \nlabelloc=t;\nnode [fontsize=8]; \nlabelloc=t;\nlabeljust=c;\nfontsize=12;\nfontname=Helvetica;\n{dot_data[dot_data.index("{") + 1:]}'
-
-            graph = graphviz.Source(dot_data_with_title)
-            display(graph)
-
-      # Get feature names for dropdown
-      feature_names = df.columns.tolist()
-
-      # Create widgets
-      feature_one_way_widget = widgets.Dropdown(
-          options=feature_names,
-          value=feature_names[1],
-          description='Feature:',
-          disabled=False,
-      )
-
-      feature1_widget = widgets.Dropdown(
-          options=feature_names,
-          value = feature_names[1],
-          description='Feature 1:',
-          disabled=False,
-      )
-
-      feature2_widget = widgets.Dropdown(
-          options=feature_names,
-          value = feature_names[2],
-          description='Feature 2:',
-          disabled=False,
-      )
-
-      # Create interactive widgets
-      one_way_interact = interactive(plot_one_way_segments_and_weak_spots_heatmap,
-                                    feature1=feature_one_way_widget)
-      #one_way_interact.manual = True
-
-      two_way_interact = interactive(plot_segments_and_weak_spots_heatmap,
-                                    feature1=feature1_widget, feature2=feature2_widget)
-      #two_way_interact.manual = True
-
-      message11 = widgets.HTML(value="<h3>One-Way Weak Spots</h3>")
-      message12 = widgets.HTML(value="<h3>Two-Way Weak Spots</h3>")
-      with weakspot_tab:
-        # Display widgets
-        display(HBox([VBox([message11,one_way_interact]), VBox([message12, two_way_interact])]))
-
-
-  ################### Robustness #########################
-      def robust_analysis(X_test, y_test, perturb_method='raw', perturb_features= 'Select All', perturb_size=0.1, metric='AUC', iterations=10):
-
-        perturbed_scores = []
-
-        #if perturb_features == 'Select All':
-        #  perturb_features = X.columns
-
-        if 'Select All' in perturb_features:
-          perturb_features = X.columns
-
-        # Function to perturb categorical features
-        def perturb_categorical(column, perturb_size):
-            # Calculate category frequencies
-            frequencies = column.value_counts(normalize=True)
-            categories = frequencies.index
-            probabilities = frequencies.values
-
-            # Perturb with a probability of `perturb_size`
-            mask = np.random.rand(len(column)) < perturb_size
-            perturbed_values = np.random.choice(categories, size=mask.sum(), p=probabilities)
-            column[mask] = perturbed_values
-            return column
-
-        # Perform perturbation and calculate scores
-        for _ in range(iterations):  # Repeat 10 times (default)
-            X_test_perturbed = X_test.copy()
-
-            for feature in perturb_features:
-                if  X_test[feature].dtype in [np.float64, np.int64]: # for numerical features
-                  if perturb_method == 'raw':
-                    noise_std = perturb_size * X_test_perturbed[feature].var()
-                    noise = np.random.normal(0, noise_std, X_test_perturbed[feature].shape)
-                    X_test_perturbed[feature] += noise
-                  elif perturb_method == 'quantile':
-                    # Convert to quantiles
-                    quantiles = X_test_perturbed[feature].rank(pct=True)
-                    # Add uniform noise to the quantiles
-                    perturbed_quantiles = quantiles + np.random.uniform(-perturb_size, perturb_size, quantiles.shape)
-                    perturbed_quantiles = np.clip(perturbed_quantiles, 0, 1)  # Ensure quantiles are within [0, 1]
-                    # Convert the perturbed quantiles back to original feature space
-                    X_test_perturbed[feature] = np.quantile(X_test[feature], perturbed_quantiles)
-                elif X_test[feature].dtype == 'category': # for categorical features
-                    X_test_perturbed[feature] = perturb_categorical(X_test_perturbed[feature], perturb_size)
-
-            # Evaluate model performance on perturbed data
-            if task == 'classification':
-                y_pred_perturbed = model.predict_proba(X_test_perturbed)[:, 1]
-            else:
-                y_pred_perturbed = model.predict(X_test_perturbed)
-
-            score = evaluate_score(y_test, y_pred_perturbed, metric)
-            perturbed_scores.append(score)
-
-        return perturbed_scores
-
-      def robust_plot(X_test, y_test, selected_features = 'Select All', metric='AUC'):
-        perturbation_sizes = np.arange(0, 0.6, 0.1)  # From 0 to 0.5 in 0.1 increments
-        results = {}
-
-        if 'Select All' in selected_features:
-          selected_features = X.columns
-
-        for size in perturbation_sizes:
-          results[size] = robust_analysis(X_test, y_test, perturb_method='raw', perturb_features=selected_features, perturb_size=size, metric=metric, iterations = 10)
-
-
+        scaler = StandardScaler()
+        X_test_scaled = scaler.fit_transform(X_test)
+        X_test_scaled = pd.DataFrame(X_test_scaled, columns=X_train.columns)  # Keep the feature names
+
+        # Apply K-means clustering
+        kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10).fit(X_test_scaled)
+        # Predict clusters for the test set
+        clusters = kmeans.predict(X_test_scaled)
+        # Evaluate the performance of the model on each cluster
+        cluster_scores = []
+        for cluster in range(n_clusters):
+            cluster_indices = np.where(clusters == cluster)[0]
+            score = evaluate_score(y_test.iloc[cluster_indices], y_pred[cluster_indices], metric)
+            cluster_scores.append((cluster, score))
+
+        # Sort clusters by score and select the worst performing cluster
+        worst_cluster, worst_score = sorted(cluster_scores, key=lambda x: x[1])[0]
+        #worst_cluster = sorted(cluster_scores, key=lambda x: x[1])[0][0]
+
+        # Indices of the worst performing cluster
+        worst_cluster_indices = np.where(clusters == worst_cluster)[0]
+
+        return worst_cluster_indices, worst_score
+
+    # Define the function for the worst cluster analysis
+    def plot_worst_cluster(metric='AUC', max_k=10):
+        if metric not in metric_functions:
+          raise ValueError(f"Unsupported metric: {metric}")
+
+        worst_scores = []
+        k_values = list(range(2, max_k + 1))
+
+        # Perform KMeans clustering and identify the worst cluster for each K
+        for k in k_values:
+            _, worst_score = get_worst_cluster(k, metric)
+            worst_scores.append(worst_score)
+
+        # Plot the worst cluster performance
         plt.figure(figsize=(10, 6))
-        plt.boxplot([results[size] for size in perturbation_sizes], labels=[str(round(size, 2)) for size in perturbation_sizes])
-        plt.xlabel('Perturbation Size')
+        plt.plot(k_values, worst_scores, marker='o')
+        plt.axhline(evaluate_score(y_test, y_pred, metric), color='red', linestyle='--', label='Overall Test Performance')
+        plt.xticks(k_values)
+        plt.xlabel('Number of Clusters (K)')
         plt.ylabel(metric)
-        plt.title('Model Robustness: Perturbation on Selected Features')
+        plt.title(f'Worst Cluster Performance by Number of Clusters ({metric})')
+        plt.legend()
         plt.grid(True)
         plt.show()
 
-      # Output widget for robustness
-      output_robust = widgets.Output()
+    def get_worst_samples(alpha, immu_feature=None):
+        y_pred_copy = pd.Series(y_pred, index=X_test.index)
+        residuals = np.abs(y_pred_copy - y_test)
 
-      # Create a SelectMultiple widget for feature selection
-      feature_selector = widgets.SelectMultiple(
-          options= ['Select All']+ list(X_test.columns),
-          value=['Select All'],
-          description='Features',
-          disabled=False
-      )
+        worst_indices = []
 
-      '''
-      def update_options(change):
-        # If 'Select All' is selected, select all features
-        if 'Select All' in change['new']:
-            feature_selector.value = list(X_test.columns)
+        if immu_feature is not None and immu_feature in X_test.columns:
+            X_test_copy = X_test.copy()
+            X_test_copy['bin'], bins = pd.qcut(X_test_copy[immu_feature], q=10, retbins=True, duplicates='drop')
 
-      feature_selector.observe(update_options, names='value')
-      '''
+            for bin_label in X_test_copy['bin'].unique():
+                bin_indices = X_test_copy[X_test_copy['bin'] == bin_label].index
 
-      # Button to run the analysis
-      run_button = widgets.Button(description="Confirm", button_style='success')
+                # Calculate residuals for the current bin
+                residuals_bin = residuals.loc[bin_indices]
 
-      # Button click event handler
-      def on_run_button_clicked(b):
-          output_robust.clear_output()
-          with output_robust:
-              selected_features = list(feature_selector.value)
-              robust_plot(X_test, y_test, selected_features, metric='AUC')
+                # Sort and select worst samples within the bin
+                sorted_indices_bin = np.argsort(-residuals_bin)[:int(alpha * len(bin_indices))]
+                worst_indices.extend(bin_indices[sorted_indices_bin])
+        else:
+            # For the case without an immutable feature
+            sorted_indices = residuals.index[np.argsort(-residuals)[:int(alpha * len(y_test))]]
+            worst_indices.extend(sorted_indices)
+            #print(worst_indices)
 
-      run_button.on_click(on_run_button_clicked)
-
-      with output_robust:
-        selected_features = list(feature_selector.value)
-        robust_plot(X_test, y_test, selected_features, metric='AUC')
-
-      with robust_tab:
-        # Display the widgets
-        display(widgets.VBox([feature_selector,
-                              run_button,
-                              output_robust]))
-
-  ############ Fairness #######################
-      # define Precision Ratio function
-      def calculate_pr(feature, protected_class):
-          #Ensure predictions are added to the test set
-          predictions = X_test.copy()
-          predictions['pred'] = model.predict(X_test)
-          predictions['true'] = y_test  # Add true labels
-          #predictions['pred'] = (predictions['pred'] >= 0.5).astype(int)
-
-          # Check if the feature is numerical and needs binning
-          if X[feature].dtype in [np.float64, np.int64]:
-              # Perform equal-quantile binning if not already done
-              _, bins = pd.qcut(X[feature], q=10, retbins=True, duplicates='drop')
-              bin_labels = range(1, len(bins))
-              predictions['binned_feature'] = pd.cut(X[feature], bins=bins, labels=bin_labels)
-              protected_mask = predictions['binned_feature'] == protected_class
-          else:
-              protected_mask = predictions[feature] == protected_class
-
-          reference_mask = ~protected_mask  # Use the complement as the reference group
+        return worst_indices
 
 
-          # Assuming 'true' and 'pred' columns exist in predictions DataFrame
-          TP_protected = ((predictions['pred'] == 1) & (predictions['true'] == 1) & protected_mask).sum()
-          FP_protected = ((predictions['pred'] == 1) & (predictions['true'] == 0) & protected_mask).sum()
+    # Define the function for resilience analysis
+    def resilience_score(metric='AUC', alpha=0.1, immu_feature=None):
+        # Check if the metric is supported
+        if metric not in metric_functions:
+            raise ValueError(f"Unsupported metric: {metric}")
 
-          TP_reference = ((predictions['pred'] == 1) & (predictions['true'] == 1) & reference_mask).sum()
-          FP_reference = ((predictions['pred'] == 1) & (predictions['true'] == 0) & reference_mask).sum()
+        worst_indices = get_worst_samples(alpha, immu_feature)
+        y_test_worst = y_test.loc[worst_indices]
+        #y_pred_worst = y_pred[worst_indices]
 
-          PPV_protected = TP_protected / (TP_protected + FP_protected) if (TP_protected + FP_protected) > 0 else None
-          PPV_reference = TP_reference / (TP_reference + FP_reference) if (TP_reference + FP_reference) > 0 else None
+        #y_test_worst = y_test[worst_indices]
+        y_pred_copy = pd.Series(y_pred, index=X_test.index)
+        y_pred_worst = y_pred_copy.loc[worst_indices]
 
-          pr = PPV_protected / PPV_reference if PPV_reference is not None and PPV_protected is not None else None
+        score = evaluate_score(y_test_worst, y_pred_worst, metric)
 
-          # Cleanup if binned feature was added
-          if 'binned_feature' in predictions.columns:
-              predictions.drop(columns=['binned_feature'], inplace=True)
+        return score
 
-          return pr
+    def plot_resilience(metric='AUC', immu_feature=None):
+        performance_scores = []
+        alpha_values = np.arange(0.1, 1.1, 0.1)  # from 0.1 to 1.0
 
-      # define adverse impact ratio function
-      def calculate_air(feature, protected_class):
-          # Ensure predictions are added to the test set
-          predictions = X_test.copy()
-          predictions['pred'] = model.predict(X_test)
-          #predictions['pred'] = (predictions['pred'] >= 0.5).astype(int)
+        # Calculate performance for varying worst sample ratios
+        for alpha in alpha_values:
+          worest_score = resilience_score(metric=metric, alpha=alpha, immu_feature = immu_feature)
+          performance_scores.append(worest_score)
 
-          # Check if the feature is numerical and needs binning
-          if X[feature].dtype in [np.float64, np.int64]:
-              # Perform equal-quantile binning if not already done
-              _, bins = pd.qcut(X[feature], q=10, retbins=True, duplicates='drop')
-              bin_labels = range(1, len(bins))
-              predictions['binned_feature'] = pd.cut(X[feature], bins=bins, labels=bin_labels)
-              protected_mask = predictions['binned_feature'] == protected_class
-          else:
-              protected_mask = predictions[feature] == protected_class
+        # Plotting the performance scores
+        plt.figure(figsize=(10, 6))
+        plt.plot(alpha_values, performance_scores, label='Worst Sample Performance')
 
-          reference_mask = ~protected_mask  # Use the complement as the reference group
+        # Plot the performance on the entire test set
+        overall_score = evaluate_score(y_test, y_pred, metric)
 
-          TP_FP_protected = predictions.loc[protected_mask, 'pred'].sum()
-          TP_FP_reference = predictions.loc[reference_mask, 'pred'].sum()
+        plt.axhline(overall_score, color='red', linestyle='--', label='Overall Test Performance')
 
-          n_protected = protected_mask.sum()
-          n_reference = reference_mask.sum()
+        plt.xlabel('Worst Sample Ratio')
+        plt.ylabel(metric)
+        plt.title(f'Model Performance under Worst Sample Scenario ({metric})')
+        plt.legend()
+        plt.show()
 
-          # Calculate AIR, handle division by zero if necessary
-          air = (TP_FP_protected / n_protected) / (TP_FP_reference / n_reference) if n_reference > 0 and n_protected > 0 else None
+    def plot_resilience_distance(method='worst-sample', distance_metric='PSI', alpha=0.1, top_k = 10, immu_feature=None):
+      # top_k: top k features to display
+        if method == 'worst-sample':
+            worst_indices = get_worst_samples(alpha, immu_feature)
+            X_worst = X_test.loc[worst_indices]
+        elif method == 'worst-cluster':
+            worst_indices,_ = get_worst_cluster(n_clusters = 10, metric = 'AUC')
+            X_worst = X_test.iloc[worst_indices]
 
-          # Remove temporary binned feature column if it was added
-          if 'binned_feature' in predictions.columns:
-              predictions.drop(columns=['binned_feature'], inplace=True)
+        feature_distances = {}
 
-          return air
+        for feature in X_test.columns:
+            expected = X_test[feature]
+            actual = X_worst[feature]
 
-      # define Standardized Mean Difference (SMD) function
-      def calculate_SMD(feature, protected_class):
-          predictions = X_test.copy()
-          predictions['pred'] = model.predict(X_test)
-          #predictions['pred'] = (predictions['pred'] >= 0.5).astype(int)
+            if distance_metric == 'PSI':
+                distance = calculate_psi(expected, actual)
+            elif distance_metric == 'WD1':
+                distance = wasserstein_distance(expected, actual)
+            elif distance_metric == 'KS':
+                distance = ks_2samp(expected, actual)[0]  # Just the statistic, not the p-value
+            else:
+                raise ValueError("Unsupported distance_metric")
 
-          # Check if the feature is numerical and needs binning
-          if X[feature].dtype in [np.float64, np.int64]:
-              # Perform equal-quantile binning if not already done
-              _, bins = pd.qcut(X[feature], q=10, retbins=True, duplicates='drop')
-              bin_labels = range(1, len(bins))
-              predictions['binned_feature'] = pd.cut(X[feature], bins=bins, labels=bin_labels)
-              protected_mask = predictions['binned_feature'] == protected_class
-          else:
-              protected_mask = predictions[feature] == protected_class
+            feature_distances[feature] = distance
 
-          reference_mask = ~protected_mask  # Use the complement as the reference group
+        # Sort features by distance and select top_k
+        sorted_features = sorted(feature_distances.items(), key=lambda x: x[1], reverse=True)[:top_k]
 
-          mean_protected = predictions[protected_mask]['pred'].mean()
-          mean_reference = predictions[reference_mask]['pred'].mean()
+        # Display the top features with their distances
+        #print(f"Top {top_k} features with largest {distance_metric} distance under {method} method:")
+        #for feature, distance in sorted_features:
+        #   print(f"{feature}: {distance}")
 
-          pooled_std = np.sqrt(((protected_mask.sum() - 1) * predictions[protected_mask]['pred'].std() ** 2 +
-                                (reference_mask.sum() - 1) * predictions[reference_mask]['pred'].std() ** 2) /
-                              (protected_mask.sum() + reference_mask.sum() - 2))
+        # Plot the top features with their distances
+        features, distances = zip(*sorted_features)
+        plt.figure(figsize=(10, 6))
+        plt.barh(features, distances, color='skyblue')
+        plt.xlabel('Distance Measure')
+        plt.ylabel('Features')
+        plt.title(f'Top {top_k} Features by {distance_metric} Distance')
+        plt.gca().invert_yaxis()  # Invert y-axis to have the largest bar on top
+        plt.show()
 
-          smd = (mean_protected - mean_reference) / pooled_std
-          return smd
 
-      # Function to evaluate fairness and visualize AIR
-      # Create separate output containers for AIR plot
-      air_plot_output = widgets.Output()
+    # Define Widgets
+    method_widget = widgets.Dropdown(
+        options=['worst-sample',
+                'worst-cluster'],  # Add more methods as they are implemented
+        value='worst-sample',
+        description='Method:',
+        disabled=False,
+    )
 
-      def plot_air(selected_pairs):
-          # Initialize lists to store AIR values and labels for the plot
-          air_values = []
-          labels = []
+    metric_classification_widget = widgets.Dropdown(
+        options=['ACC', 'AUC', 'F1'],
+        value='ACC',
+        description='Metric:',
+        disabled=False,
+    )
 
-          # Loop through each (feature, protected_class) pair
-          for feature, protected_class in selected_pairs:
-              # Calculate AIR for the current pair
-              air = calculate_air(feature, protected_class)
-              labels.append(f"{feature}: {protected_class}")
-              air_values.append(air)
+    metric_regression_widget = widgets.Dropdown(
+        options=['MSE', 'MAE', 'R2'],
+        value='MSE',
+        description='Metric:',
+        disabled=False,
+    )
 
-          with air_plot_output:
-            clear_output(wait=True)
-          # Adjust the plot size dynamically based on the number of pairs. Increase the vertical size factor as needed.
-          # Inside plot_air
-            air_values_filtered = [value if value is not None else -1 for value in air_values]  # Replace None with -1
-            labels_filtered = [label for label, value in zip(labels, air_values) if value is not None]  # Keep corresponding labels
+    worst_ratio_widget = widgets.FloatSlider(
+        value=0.1,
+        min=0,
+        max=1.0,
+        step=0.1,
+        description='Worst Ratio:',
+        disabled=False,
+        continuous_update=False,
+        orientation='horizontal',
+        readout=True,
+        readout_format='.1f',
+    )
 
-            plt.figure(figsize=(10, max(2, len(labels_filtered) * 1)))  # Adjust based on filtered labels
-            plt.barh(labels_filtered, air_values_filtered, color='skyblue')
-            plt.axvline(1, color='red', linestyle='--', label='Fairness (AIR=1)')
-            plt.xlabel('Adverse Impact Ratio (AIR)')
-            plt.ylabel('Protected Class')
-            plt.title('Adverse Impact Ratio Analysis')
-            plt.legend()
-            plt.tight_layout()
-            plt.show()
+    # Define the dropdown widget for the distance measure
+    distance_measure_widget = widgets.Dropdown(
+        options=['PSI', 'WD1', 'KS'],
+        value='PSI',
+        description='Distance Measure:',
+        disabled=False,
+    )
 
-      pr_plot_output = widgets.Output()
-      # Function to evaluate fairness and visualize AIR
-      def plot_pr(selected_pairs):
-          pr_values = []
-          labels = []
+    # Container widget to dynamically display the correct metric options
+    metric_widget = widgets.VBox([metric_classification_widget])
 
-          for feature, protected_class in selected_pairs:
-              pr = calculate_pr(feature, protected_class)
-              labels.append(f"{feature}: {protected_class}")
-              pr_values.append(pr)
+    # Create a dropdown for selecting the immutable feature
+    immu_feature_widget = widgets.Dropdown(
+        options=[None] + list(X.columns),
+        value=None,
+        description='Immutable Feature:',
+        disabled=False,
+    )
 
-          # Plotting
-          with pr_plot_output:
-            clear_output(wait = True)
-            plt.figure(figsize=(10, max(2, len(selected_pairs) * 0.5)))
-            plt.barh(labels, pr_values, color='skyblue')
-            plt.axvline(1, color='red', linestyle='--', label='Fairness (PR=1)')
-            plt.xlabel('Precision Ratio (PR)')
-            plt.ylabel('Protected Class')
-            plt.title('Precision Ratio Analysis')
-            plt.legend()
-            plt.tight_layout()
-            plt.show()
+    # Function to update metric options based on task
+    def update_metric_options():
+        if task == 'classification':
+            metric_widget.children = [metric_classification_widget]
+        elif task == 'regression':
+            metric_widget.children = [metric_regression_widget]
 
-      smd_plot_output = widgets.Output()
-      def plot_smd(selected_pairs):
-          smd_values = []
-          labels = []
+    # Button to run the analysis
+    run_button = widgets.Button(description="Run Analysis",
+                                button_style='success')
 
-          for feature, protected_class in selected_pairs:
-            smd = calculate_SMD(feature, protected_class)
-            labels.append(f"{feature}: {protected_class}")
-            smd_values.append(smd)
+    # Function to handle button click event
+    output_resilient = widgets.Output() # output for the resilient plots
 
-          with smd_plot_output:
-            plt.figure(figsize=(10, max(2, len(selected_pairs) * 0.5)))
-            plt.barh(labels, smd_values, color='skyblue')
-            plt.axvline(0, color='red', linestyle='--', label='No Difference')
-            plt.xlabel('Standardized Mean Difference (SMD)')
-            plt.ylabel('Comparison')
-            plt.title('Standardized Mean Difference Analysis')
-            plt.legend()
-            plt.tight_layout()
-            plt.show()
+    def on_run_button_clicked(b):
+        output_resilient.clear_output()
 
-      # Widget for selecting sensitive attributes
-      sensitive_attr_widget = widgets.Dropdown(
-          options=X.columns,
-          description='Feature:',
-          disabled=False
-      )
+        method = method_widget.value
+        metric = metric_widget.children[0].value
+        worst_ratio = worst_ratio_widget.value
+        immu_feature = immu_feature_widget.value
+        distance_metric = distance_measure_widget.value
+        # Call your resilience_analysis function here with the selected options
+        with output_resilient:
+          if method == 'worst-sample':
+            plot_resilience(metric, immu_feature)
+            plot_resilience_distance(method, distance_metric, worst_ratio, top_k = 10, immu_feature=immu_feature)
+          if method == 'worst-cluster':
+            plot_worst_cluster(metric)
+            plot_resilience_distance(method, distance_metric, worst_ratio, top_k = 10, immu_feature=immu_feature)
 
-      # UI for specifying the protected class
-      protected_class_widget = widgets.Dropdown(
-          description='Protected Class:',
-          disabled=False
-      )
+    run_button.on_click(on_run_button_clicked)
 
-      def update_protected_class_options(*args):
-          attr = sensitive_attr_widget.value
-          if X[attr].dtype == 'object' or X[attr].dtype.name == 'category':
-              # For categorical attributes
-              options = [(str(v), v) for v in X[attr].unique()]
-          else:
-              # For numerical attributes, perform binning
-              binned_values, bins = pd.cut(X[attr], bins=10, retbins=True, labels=range(1, 11))
-              options = [(f"Bin {i}: {round(bins[i-1], 2)} to {round(bins[i], 2)}", i) for i in range(1, len(bins))]
+    # Display widgets
+    widget_inputs_1 = widgets.HBox([method_widget, metric_widget, immu_feature_widget])
+    widget_inputs_2 = widgets.HBox([distance_measure_widget, worst_ratio_widget])
 
-          protected_class_widget.options = options
-          # Resetting the value to the first option to avoid selection errors
-          protected_class_widget.value = options[0][1]
+    with resiliency_tab:
+      display(widgets.VBox([widget_inputs_1,
+                          widget_inputs_2,
+                          run_button]))
 
-      sensitive_attr_widget.observe(update_protected_class_options, 'value')
-      update_protected_class_options()  # Call it once initially to set default options
+      display(output_resilient)
 
-      add_button = widgets.Button(description='Add Feature/Class',
-                                  button_style='success')
-      generate_plot_button = widgets.Button(description='Generate Disparity Plot',
-                                            button_style='info')
 
-      # Containers
-      global added_features_classes
-      added_features_classes = []  # Clear the list of added feature/class pairs
+################# Reliability #####################
+    # Create widgets
+    alpha_slider = widgets.FloatSlider(value=0.95, min=0, max=1.0, step=0.01, description='alpha:')
+    plus_button = widgets.Button(description='+',
+                                button_style='primary',
+                                layout=widgets.Layout(width='25px'))
 
-      features_classes_container = widgets.Output()
+    minus_button = widgets.Button(description='-',
+                                  button_style='primary',
+                                  layout=widgets.Layout(width='25px'))
 
-      # Callbacks
-      def add_feature_class(b):
-          #global added_features_classes
-          feature = sensitive_attr_widget.value
-          protected_class = protected_class_widget.value
-          added_features_classes.append((feature, protected_class))
+    ui = widgets.HBox([alpha_slider, minus_button, plus_button])
 
-          # Display the current list of added features/classes
-          with features_classes_container:
-              clear_output()
-              print("Added Feature/Protected Classes:")
-              for f, c in added_features_classes:
-                  print(f"{f}: {c}")
+    # Update function for the buttons
+    def increment(b):
+        alpha_slider.value = min(alpha_slider.value + 0.01, 1.0)
 
-      # Adjusted Callback for Generating the AIR Plot
-      def generate_fairness_plot(b):
-          # Assuming plot_air is defined to take a list of (feature, protected_class) tuples
+    def decrement(b):
+        alpha_slider.value = max(alpha_slider.value - 0.01, 0.0)
+
+    plus_button.on_click(lambda b: increment(b))
+    minus_button.on_click(lambda b: decrement(b))
+
+    def on_change_reliability(change):
+      if change['name'] == 'value' and (change['new'] != change['old']):
+        #clear_output(wait=True)
+        #display(model_select)
+        #with global_tab:
+        reliability_output.clear_output()
+        #output_local.clear_output()
+        #pdp_tab.clear_output()
+
+        # Get the selected model and confidence level
+        #model = models[change['new']]
+        #model = models[model_select.value]
+
+        # Re-fit the model with the new training data and testing data
+        #model.fit(X_train, y_train)
+        # prepare the datasets for testing and calibration
+        #data_prepare()
+
+        with reliability_tab:
+          with reliability_output:
+           reliability_plot()
+          display(reliability_output)
+
+    # Attach the update function to the widgets
+    alpha_slider.observe(on_change_reliability, names='value')
+
+    with reliability_tab:
+      # Display the widgets
+      message = widgets.HTML(f"<h3>Select Confidence Level:")
+      #display(message)
+      display(widgets.VBox([message, ui]))
+
+    out_widget = widgets.Output() # an output to hold the plot
+    def plot_conformal_classification(alpha=0.95):
+      with out_widget:
+        out_widget.clear_output(wait=True)
+        plt.figure(figsize=(16, 6))
+
+        # Calculate the cutoff based on alpha and calibration strangeness
+        cutoff = np.percentile(cal_strangeness, 100 * (alpha))
+
+        '''
+        # Plot calibration set strangeness scores
+        plt.subplot(1, 3, 1)
+        plt.hist(strangeness, bins=30, label='Calibration strangeness', alpha=0.7)
+        plt.axvline(x=cutoff, color='r', linestyle='--', label=f'Cutoff at alpha={alpha}')
+        plt.xlabel('Strangeness')
+        plt.ylabel('Count')
+        plt.legend()
+        '''
+
+        # Plot strangeness distribution for the test set
+        plt.subplot(1, 2, 1)
+        plt.hist(test_strangeness, bins=30, label='Test set strangeness', alpha=0.7)
+        plt.axvline(x=cutoff, color='r', linestyle='--', label=f'Cutoff at alpha={alpha:.2f}')
+        plt.xlabel('Strangeness')
+        plt.ylabel('Count')
+        plt.title('Distribution of Strangeness for Test Set')
+        plt.legend()
+
+        # Scatter plot for test set
+        plt.subplot(1, 2, 2)
+        conformal_idx = test_strangeness <= cutoff  # Conformal points are below or equal to the cutoff
+        non_conformal_idx = ~conformal_idx
+        plt.scatter(np.arange(len(test_strangeness))[conformal_idx], test_strangeness[conformal_idx], color='g', label=f'Conformal ({conformal_idx.mean() * 100:.2f}%)')
+        plt.scatter(np.arange(len(test_strangeness))[non_conformal_idx], test_strangeness[non_conformal_idx], color='r', label=f'Non-Conformal ({non_conformal_idx.mean() * 100:.2f}%)')
+        plt.axhline(y=cutoff, color='b', linestyle='--', label='Cutoff')
+        plt.xlabel('Test instances')
+        plt.ylabel('Strangeness')
+        plt.title('Confomarl vs. Non-conformal Points in Test Set')
+        plt.legend()
+
+        #plt.tight_layout()
+        plt.show()
+
+    #out2_widget = widgets.Output()
+    def plot_conformal2_classification():
+    #with out2_widget:
+      #out2_widget.clear_output(wait=True)
+
+      # Calculate p-values for test instances
+      p_values = [(cal_strangeness >= t_s).mean() for t_s in test_strangeness]
+
+      plt.figure(figsize=(16, 6))
+
+      plt.subplot(1, 2, 1)
+      # Visualize p-values distribution
+      plt.hist(p_values, bins=10, edgecolor='k', alpha=0.7, density=True)
+      plt.xlabel('P-value')
+      plt.ylabel('Density')
+      plt.title('Distribution of P-values for Test Set')
+
+      # Calculate the normalized instance indices for the calibration and test sets
+      cal_indices_norm = np.arange(len(cal_strangeness)) / len(cal_strangeness)
+      test_indices_norm = np.arange(len(test_strangeness)) / len(test_strangeness)
+
+      plt.subplot(1, 2, 2)
+      # Visualize calibration set vs. test set strangeness
+      plt.scatter(cal_indices_norm, np.sort(cal_strangeness), label='Calibration Strangeness', s=50)
+      plt.scatter(test_indices_norm, np.sort(test_strangeness), label='Test Strangeness', s=50, alpha=0.6)
+      plt.xlabel('Normalized Instances (sorted by strangeness)')
+      plt.ylabel('Strangeness')
+      plt.title('Strangeness of Calibration vs. Test Set')
+      plt.legend()
+      plt.show()
+
+    def plot_reliability_classification(y_true, y_probs, n_bins=10, ax=None):
+        prob_true, prob_pred = calibration_curve(y_true, y_probs, n_bins=n_bins)
+
+        if ax is None:
+            plt.figure(figsize=(8, 8))
+            ax = plt.gca()
+
+        ax.plot([0, 1], [0, 1], 'k:', label='Perfectly calibrated')
+        ax.plot(prob_pred, prob_true, 's-', label='Model')
+        ax.set_xlabel('Mean predicted probability')
+        ax.set_ylabel('Fraction of positives')
+        ax.set_title('Reliability Diagram')
+        ax.legend()
+        plt.show()
+
+    def plot_conformal_regression(alpha=0.90):
+        # Calculate the cutoff based on alpha and calibration residuals
+        cutoff = np.percentile(cal_residuals, 100 * (alpha))
+
+        plt.figure(figsize=(16, 6))
+
+        # Identify which residuals are within the cutoff
+        within_cutoff = test_residuals <= cutoff
+        outside_cutoff = ~within_cutoff
+
+        # Calculate the percentage of test points that are green
+        percent_within_cutoff = np.mean(within_cutoff) * 100
+        percent_outside_cutoff = 100- percent_within_cutoff
+
+        # Scatter plot for predicted values (blue dots)
+        plt.scatter(np.arange(len(test_pred)), test_pred, c='b', s=30, label='Prediction')
+
+        # Scatter plot for true test values (green dots when within interval, red dots when outside)
+        plt.scatter(np.arange(len(test_pred))[within_cutoff], y_test[within_cutoff],
+                    c='g', s=30, zorder=5, label=f'Within interval ({percent_within_cutoff:.2f}%)')
+        plt.scatter(np.arange(len(test_pred))[outside_cutoff], y_test[outside_cutoff],
+                    c='r', s=30, zorder=5, label=f'Outside interval ({percent_outside_cutoff:.2f}%)')
+
+        # Prediction intervals (blue bars)
+        plt.errorbar(np.arange(len(test_pred)), test_pred, yerr=cutoff, fmt='none', ecolor='gray', elinewidth=1)
+
+        plt.xlabel('Index')
+        plt.ylabel('Value')
+        plt.title(f'Conformal Prediction (alpha={alpha*100:.2f}%)')
+        plt.legend()
+
+        # Display the percentage of test points that are green on the plot
+        #plt.text(0.7 * len(test_pred), min(test_pred), f'{percent_within_cutoff:.2f}% within interval',
+        #         fontsize=12, ha='center')
+
+        plt.show()
+
+    def plot_predicted_vs_actual(y_true, y_pred):
+      # Create figure and a grid of subplots
+      fig, axs = plt.subplots(1, 2, figsize=(16, 8))
+      """
+      Plots a scatter plot comparing the true and predicted values for regression.
+      """
+      ax = axs[0]
+      ax.scatter(y_true, y_pred, alpha=0.5)
+      ax.plot([min(y_true), max(y_true)], [min(y_true), max(y_true)], 'r--')
+      ax.set_xlabel('True Values')
+      ax.set_ylabel('Predicted Values')
+      ax.set_title('Predicted vs Actual Values')
+
+      """
+      Plots a histogram of the residuals (true value - predicted value) for regression.
+      """
+      residuals = y_true - y_pred
+      ax=axs[1]
+      ax.hist(residuals, bins=30, alpha=0.5, edgecolor='k')
+      ax.axvline(x=0, color='r', linestyle='--')
+      ax.set_xlabel('Residuals')
+      ax.set_ylabel('Frequency')
+      ax.set_title('Distribution of Residuals')
+
+      # Show plots
+      plt.tight_layout()
+      plt.show()
+
+    # combine all reliability plots
+    def reliability_plot():
+      if task == "classification":
+        # plot conformal prediction
+        out = widgets.interactive_output(plot_conformal_classification, {'alpha': alpha_slider})
+        display(out)
+        display(out_widget)
+
+        # plot conformal prediction (p-value)
+        plot_conformal2_classification()
+
+        # Plot reliability diagram
+        plot_reliability_classification(y_test, test_probs_class1)
+      elif task == "regression":
+        # plot the conformal prediction plot
+        plot_conformal_regression(alpha=alpha_slider.value)
+
+        # plot the prediction vs. actual and residual diagrams
+        plot_predicted_vs_actual(y_test, test_pred)
+      else:
+        print("Task is missing.")
+
+    # Display the outputs
+    reliability_output = widgets.Output()
+    with reliability_tab:
+      with reliability_output:
+        reliability_plot()
+      display(reliability_output)
+############## Weak Spot ######################
+    # Reset the indices of X_test and y_test to align them
+    X_test1 = X_test.reset_index(drop=True)
+    y_test1 = pd.Series(y_test).reset_index(drop=True)
+
+    predictions = model.predict(X_test1)
+
+    # Create 'accuracy_bool' column to indicate correct predictions
+    X_test1['accuracy_bool'] = predictions == y_test1.values
+
+    # Fit and visualize a decision tree
+    def fit_and_visualize_dt(df, predictors, show = False):
+        X = df[predictors]
+        y = df['accuracy_bool']
+        tree = DecisionTreeClassifier(max_depth=3, criterion='entropy', random_state=1)
+        tree.fit(X, y)
+
+        '''
+        viz = dtreeviz(
+            model,
+            X,
+            y,
+            target_name='accuracy_bool',
+            feature_names=predictors,
+            class_names=["True", "False"]
+        )
+        viz.view()  # This will open the decision tree visualization
+        '''
+        # Visualize the Decision Tree
+        if show == True:
+          feature1 = predictors[0]
+          feature2 = predictors[1]
+          plt.figure(figsize=(15, 10))
+          plot_tree(tree, filled=True, feature_names=predictors, class_names=['True', 'False'], rounded=True)
+          plt.title(f"Decision Tree Based on {feature1} & {feature2}")
+          plt.show()
+
+        return tree
+
+    def find_weak_spots_and_leaves(model, df, predictors, threshold = 0.05):
+        leaf_ids = model.apply(df[predictors])
+        t = model.tree_
+        baseline_acc = np.mean(df['accuracy_bool'])
+        #print(baseline_acc)
+
+        segments = defaultdict(list)
+        weak_spots = {}
+
+        for idx in set(leaf_ids):
+            leaf_indices = np.where(leaf_ids == idx)[0]
+            segments[idx] = leaf_indices
+
+            if len(leaf_indices) < 5:
+                continue
+
+            leaf_acc = np.mean(df['accuracy_bool'].iloc[leaf_indices])
+            if baseline_acc- leaf_acc > threshold:
+                weak_spots[idx] = leaf_indices
+
+        return weak_spots, segments
+
+    def get_leaf_accuracies(model, df, predictors):
+      leaf_ids = model.apply(df[predictors])
+      t = model.tree_
+      leaf_accuracies = {}
+
+      for idx in set(leaf_ids):
+          leaf_indices = np.where(leaf_ids == idx)[0]
+          #if len(leaf_indices) < 5:
+          #    continue
+          leaf_accuracies[idx] = np.mean(df['accuracy_bool'].iloc[leaf_indices])
+
+      return leaf_accuracies
+
+    # Generate a colormap. For instance, let's use the 'Reds' colormap.
+    cmap = plt.get_cmap('Reds')
+
+    def plot_decision_tree_segment(model, df, predictors):
+        leaf_ids = model.apply(df[predictors])
+        df['segment'] = leaf_ids  # Add the segment column to df
+        baseline_acc = np.mean(df['accuracy_bool'])
+
+        segments = defaultdict(list)
+
+        # Calculate the accuracy for each segment/leaf
+        leaf_accuracies = {}
+        for idx in set(leaf_ids):
+            leaf_indices = np.where(leaf_ids == idx)[0]
+            segments[idx] = leaf_indices
+
+            #if len(leaf_indices) < 5:
+            # continue
+            leaf_acc = np.mean(df['accuracy_bool'].iloc[leaf_indices])
+            leaf_accuracies[idx] = leaf_acc
+            #print(leaf_acc)
+
+        # Create a dataframe to map each segment to its accuracy
+        df_leaf = df[predictors + ['segment']].copy()
+        df_leaf['accuracy'] = df_leaf['segment'].map(leaf_accuracies)
+
+        # Visualization for two features
+        unique_segments = df_leaf['segment'].unique()
+        plt.figure(figsize=(12, 10))
+
+        for segment in unique_segments:
+            segment_data = df_leaf[df_leaf['segment'] == segment]
+
+            if len(segment_data) >= 5:  # Only plot segments with 5 or more data points
+              plt.scatter(segment_data[predictors[0]], segment_data[predictors[1]],
+                        label=f'Segment {segment} - Accuracy: {leaf_accuracies[segment]:.4f}')
+
+        plt.xlabel(predictors[0])
+        plt.ylabel(predictors[1])
+        plt.legend()
+        plt.title(f'Accuracy by {predictors[0]} and {predictors[1]} segments')
+        plt.show()
+
+    # plot one-way weak spot
+    def plot_one_way_segments_and_weak_spots_heatmap(feature1):
+        predictors = [feature1]
+        model = fit_and_visualize_dt(X_test1, predictors)  # Assuming this function trains and returns a model
+        weak_spots, segments = find_weak_spots_and_leaves(model, X_test1, predictors, threshold=0.1)  # Assuming this function identifies weak spots and leaves
+
+        plt.figure(figsize=(10, 6))
+
+        feature_data = X_test1[feature1]
+        total_samples = len(feature_data)
+
+        # Get accuracies for each leaf node
+        leaf_accuracies = get_leaf_accuracies(model, X_test1, predictors)  # Assuming this function calculates and returns leaf accuracies
+
+        cmap = cm.get_cmap('coolwarm')  # Get the colormap
+
+        # Plot histogram-like bars based on the segments from the decision tree
+        for leaf_idx, indices in segments.items():
+            leaf_accuracy = leaf_accuracies.get(leaf_idx, 1)  # Default to accuracy=1 if not found
+            color_value = cmap(leaf_accuracy)  # Use accuracy to map to colors
+
+            # Here we assume `segments` provides indices; you can change this to actual value ranges if needed
+            min_val = feature_data.iloc[indices].min()
+            max_val = feature_data.iloc[indices].max()
+            frequency = len(indices)
+            frequency_percent = (frequency / total_samples) * 100  # Frequency percentage
+
+            plt.bar(min_val, height=frequency, width=max_val-min_val, color=color_value, align='edge')
+
+            # Add frequency percentage text above the bar
+            plt.text(min_val, frequency, f"{frequency_percent:.2f}%", ha='left', va='bottom')
+
+            # Mark the bar with leaf ID if it's a weak spot
+            if leaf_idx in weak_spots:
+              plt.text((min_val + max_val) / 2, frequency / 2, str(leaf_idx), ha='center', va='center', color='red')
+
+        plt.title(f"One-Way Weak Spot for {feature1}")
+        plt.xlabel(feature1)
+        plt.ylabel("Frequency")
+        plt.colorbar(cm.ScalarMappable(norm=mcolors.Normalize(0, 1), cmap=cmap), label="Accuracy")
+
+        plt.show()
+
+        if weak_spots:
+          dot_data = tree.export_graphviz(model, out_file=None,
+                                          feature_names=predictors,
+                                          class_names=['True', 'False'],
+                                          filled=True, rounded=True,
+                                          special_characters=True, node_ids=True,
+                                        )
+          # Add a label (title) to the DOT source code
+          title = f"Decision Tree Based on {feature1}"
+          #dot_data_with_title = f'digraph Tree {{\nsize="4,4"; \nlabel="{title}";\nlabelloc=t;\nlabeljust=l;\nfontsize=8;\nfontname=Helvetica;\n{dot_data[dot_data.index("{") + 1:]}'
+          #dot_data_with_title = f'digraph Tree {{\ngraph [size="4,4"];\nnode [fontsize=8];\nlabel="{title}";\nlabelloc=t;\nlabeljust=l;\nfontsize=8;\nfontname=Helvetica;\n{dot_data[dot_data.index("{") + 1:]}'
+          dot_data_with_title = f'digraph Tree {{\nlabel="{title}";\nlabelloc=t;\nnode [fontsize=8];\nlabeljust=c;\nfontsize=12;\nfontname=Helvetica;\n{dot_data[dot_data.index("{") + 1:]}'
+
+          graph = graphviz.Source(dot_data_with_title)
+          display(graph)
+
+    # Function to plot two-way weak spots
+    def plot_segments_and_weak_spots_heatmap(feature1, feature2):
+        predictors = [feature1, feature2]
+        model = fit_and_visualize_dt(X_test1, predictors)
+        weak_spots, segments = find_weak_spots_and_leaves(model, X_test1, predictors, threshold = 0.1)
+
+        plt.figure(figsize=(10, 10))
+
+        feature1_min, feature1_max = X_test1[feature1].min(), X_test1[feature1].max()
+        feature2_min, feature2_max = X_test1[feature2].min(), X_test1[feature2].max()
+
+        # Get accuracies for each leaf node. This is a mock-up example; replace with your actual function.
+        leaf_accuracies = get_leaf_accuracies(model, X_test1, predictors)
+
+        for leaf_idx, indices in segments.items():
+          leaf_accuracy = leaf_accuracies.get(leaf_idx)  # Default to accuracy=1 if not found
+          color_value = cmap(1 - leaf_accuracy)  # 1 - accuracy to map lower accuracies to darker colors
+
+          #feature1_range = get_range_of_feature(tree, X_test[feature1], leaf_idx, 0)
+          #feature2_range = get_range_of_feature(tree, X_test[feature2], leaf_idx, 1)
+
+          #plt.fill_betweenx(feature2_range, feature1_range[0], feature1_range[1], color=color_value, alpha=0.5)
+
+          feature1_range = (X_test1[feature1].iloc[indices].min(), X_test1[feature1].iloc[indices].max())
+          feature2_range = (X_test1[feature2].iloc[indices].min(), X_test1[feature2].iloc[indices].max())
+
+          plt.fill_betweenx(feature2_range, feature1_range[0], feature1_range[1], color=color_value, alpha=1)
+
+          if leaf_idx in weak_spots:
+              plt.text(np.mean(feature1_range), np.mean(feature2_range), str(leaf_idx), fontsize=12, color='red')
+
+        plt.xlim([feature1_min, feature1_max])
+        plt.ylim([feature2_min, feature2_max])
+        plt.xlabel(feature1)
+        plt.ylabel(feature2)
+        plt.title(f"Two-Way Weak Spots for {feature1} & {feature2}")
+        plt.show()
+
+        # Conditionally show the decision tree plot if weak_spots are not empty
+        if weak_spots:
+          #print(weak_spots)
+          plot_decision_tree_segment(model, X_test1, predictors)
+
+          dot_data = tree.export_graphviz(model, out_file=None,
+                              feature_names=predictors,
+                              class_names=['True', 'False'],
+                              filled=True, rounded=True,
+                              special_characters=True, node_ids=True,
+                              )
+          # Add a label (title) to the DOT source code
+          title = f"Decision Tree Based on {feature1} & {feature2}"
+          dot_data_with_title = f'digraph Tree {{\nlabel="{title}"; \nlabelloc=t;\nnode [fontsize=8]; \nlabelloc=t;\nlabeljust=c;\nfontsize=12;\nfontname=Helvetica;\n{dot_data[dot_data.index("{") + 1:]}'
+
+          graph = graphviz.Source(dot_data_with_title)
+          display(graph)
+
+    # Get feature names for dropdown
+    feature_names = df.columns.tolist()
+
+    # Create widgets
+    feature_one_way_widget = widgets.Dropdown(
+        options=feature_names,
+        value=feature_names[1],
+        description='Feature:',
+        disabled=False,
+    )
+
+    feature1_widget = widgets.Dropdown(
+        options=feature_names,
+        value = feature_names[1],
+        description='Feature 1:',
+        disabled=False,
+    )
+
+    feature2_widget = widgets.Dropdown(
+        options=feature_names,
+        value = feature_names[2],
+        description='Feature 2:',
+        disabled=False,
+    )
+
+    # Create interactive widgets
+    one_way_interact = interactive(plot_one_way_segments_and_weak_spots_heatmap,
+                                  feature1=feature_one_way_widget)
+    #one_way_interact.manual = True
+
+    two_way_interact = interactive(plot_segments_and_weak_spots_heatmap,
+                                  feature1=feature1_widget, feature2=feature2_widget)
+    #two_way_interact.manual = True
+
+    message11 = widgets.HTML(value="<h3>One-Way Weak Spots</h3>")
+    message12 = widgets.HTML(value="<h3>Two-Way Weak Spots</h3>")
+    with weakspot_tab:
+      # Display widgets
+      display(HBox([VBox([message11,one_way_interact]), VBox([message12, two_way_interact])]))
+
+
+################### Robustness #########################
+    def robust_analysis(X_test, y_test, perturb_method='raw', perturb_features= 'Select All', perturb_size=0.1, metric='AUC', iterations=10):
+
+      perturbed_scores = []
+
+      #if perturb_features == 'Select All':
+      #  perturb_features = X.columns
+
+      if 'Select All' in perturb_features:
+        perturb_features = X.columns
+
+      # Function to perturb categorical features
+      def perturb_categorical(column, perturb_size):
+          # Calculate category frequencies
+          frequencies = column.value_counts(normalize=True)
+          categories = frequencies.index
+          probabilities = frequencies.values
+
+          # Perturb with a probability of `perturb_size`
+          mask = np.random.rand(len(column)) < perturb_size
+          perturbed_values = np.random.choice(categories, size=mask.sum(), p=probabilities)
+          column[mask] = perturbed_values
+          return column
+
+      # Perform perturbation and calculate scores
+      for _ in range(iterations):  # Repeat 10 times (default)
+          X_test_perturbed = X_test.copy()
+
+          for feature in perturb_features:
+              if  X_test[feature].dtype in [np.float64, np.int64]: # for numerical features
+                if perturb_method == 'raw':
+                  noise_std = perturb_size * X_test_perturbed[feature].var()
+                  noise = np.random.normal(0, noise_std, X_test_perturbed[feature].shape)
+                  X_test_perturbed[feature] += noise
+                elif perturb_method == 'quantile':
+                  # Convert to quantiles
+                  quantiles = X_test_perturbed[feature].rank(pct=True)
+                  # Add uniform noise to the quantiles
+                  perturbed_quantiles = quantiles + np.random.uniform(-perturb_size, perturb_size, quantiles.shape)
+                  perturbed_quantiles = np.clip(perturbed_quantiles, 0, 1)  # Ensure quantiles are within [0, 1]
+                  # Convert the perturbed quantiles back to original feature space
+                  X_test_perturbed[feature] = np.quantile(X_test[feature], perturbed_quantiles)
+              elif X_test[feature].dtype == 'category': # for categorical features
+                  X_test_perturbed[feature] = perturb_categorical(X_test_perturbed[feature], perturb_size)
+
+          # Evaluate model performance on perturbed data
           if task == 'classification':
-            plot_air(added_features_classes)
-            plot_pr(added_features_classes)
-          if task == 'regression':
-            plot_smd(added_features_classes)
+              y_pred_perturbed = model.predict_proba(X_test_perturbed)[:, 1]
+          else:
+              y_pred_perturbed = model.predict(X_test_perturbed)
 
-      # Link callbacks to buttons
-      add_button.on_click(add_feature_class)
-      # Link the corrected callback to the generate_plot_button
-      #with plot_output_container:
-      generate_plot_button.on_click(generate_fairness_plot)
+          score = evaluate_score(y_test, y_pred_perturbed, metric)
+          perturbed_scores.append(score)
+
+      return perturbed_scores
+
+    def robust_plot(X_test, y_test, selected_features = 'Select All', metric='AUC'):
+      perturbation_sizes = np.arange(0, 0.6, 0.1)  # From 0 to 0.5 in 0.1 increments
+      results = {}
+
+      if 'Select All' in selected_features:
+        selected_features = X.columns
+
+      for size in perturbation_sizes:
+        results[size] = robust_analysis(X_test, y_test, perturb_method='raw', perturb_features=selected_features, perturb_size=size, metric=metric, iterations = 10)
 
 
-      # Add a new button for clearing the selections and plot
-      clear_button = widgets.Button(description='Clear Selections', button_style='warning')
+      plt.figure(figsize=(10, 6))
+      plt.boxplot([results[size] for size in perturbation_sizes], labels=[str(round(size, 2)) for size in perturbation_sizes])
+      plt.xlabel('Perturbation Size')
+      plt.ylabel(metric)
+      plt.title('Model Robustness: Perturbation on Selected Features')
+      plt.grid(True)
+      plt.show()
 
-      # Function to handle the clearing operation
-      def clear_selections(b):
-          # global added_features_classes
-          # added_features_classes = []  # Clear the list of added feature/class pairs
+    # Output widget for robustness
+    output_robust = widgets.Output()
 
-          # Clear the display of added feature/class pairs
-          with features_classes_container:
+    # Create a SelectMultiple widget for feature selection
+    feature_selector = widgets.SelectMultiple(
+        options= ['Select All']+ list(X_test.columns),
+        value=['Select All'],
+        description='Features',
+        disabled=False
+    )
+
+    '''
+    def update_options(change):
+      # If 'Select All' is selected, select all features
+      if 'Select All' in change['new']:
+          feature_selector.value = list(X_test.columns)
+
+    feature_selector.observe(update_options, names='value')
+    '''
+
+    # Button to run the analysis
+    run_button = widgets.Button(description="Confirm", button_style='success')
+
+    # Button click event handler
+    def on_run_button_clicked(b):
+        output_robust.clear_output()
+        with output_robust:
+            selected_features = list(feature_selector.value)
+            robust_plot(X_test, y_test, selected_features, metric='AUC')
+
+    run_button.on_click(on_run_button_clicked)
+
+    with output_robust:
+      selected_features = list(feature_selector.value)
+      robust_plot(X_test, y_test, selected_features, metric='AUC')
+
+    with robust_tab:
+      # Display the widgets
+      display(widgets.VBox([feature_selector,
+                            run_button,
+                            output_robust]))
+
+############ Fairness #######################
+    # define Precision Ratio function
+    def calculate_pr(feature, protected_class):
+        #Ensure predictions are added to the test set
+        predictions = X_test.copy()
+        predictions['pred'] = model.predict(X_test)
+        predictions['true'] = y_test  # Add true labels
+        #predictions['pred'] = (predictions['pred'] >= 0.5).astype(int)
+
+        # Check if the feature is numerical and needs binning
+        if X[feature].dtype in [np.float64, np.int64]:
+            # Perform equal-quantile binning if not already done
+            _, bins = pd.qcut(X[feature], q=10, retbins=True, duplicates='drop')
+            bin_labels = range(1, len(bins))
+            predictions['binned_feature'] = pd.cut(X[feature], bins=bins, labels=bin_labels)
+            protected_mask = predictions['binned_feature'] == protected_class
+        else:
+            protected_mask = predictions[feature] == protected_class
+
+        reference_mask = ~protected_mask  # Use the complement as the reference group
+
+
+        # Assuming 'true' and 'pred' columns exist in predictions DataFrame
+        TP_protected = ((predictions['pred'] == 1) & (predictions['true'] == 1) & protected_mask).sum()
+        FP_protected = ((predictions['pred'] == 1) & (predictions['true'] == 0) & protected_mask).sum()
+
+        TP_reference = ((predictions['pred'] == 1) & (predictions['true'] == 1) & reference_mask).sum()
+        FP_reference = ((predictions['pred'] == 1) & (predictions['true'] == 0) & reference_mask).sum()
+
+        PPV_protected = TP_protected / (TP_protected + FP_protected) if (TP_protected + FP_protected) > 0 else None
+        PPV_reference = TP_reference / (TP_reference + FP_reference) if (TP_reference + FP_reference) > 0 else None
+
+        pr = PPV_protected / PPV_reference if PPV_reference is not None and PPV_protected is not None else None
+
+        # Cleanup if binned feature was added
+        if 'binned_feature' in predictions.columns:
+            predictions.drop(columns=['binned_feature'], inplace=True)
+
+        return pr
+
+    # define adverse impact ratio function
+    def calculate_air(feature, protected_class):
+        # Ensure predictions are added to the test set
+        predictions = X_test.copy()
+        predictions['pred'] = model.predict(X_test)
+        #predictions['pred'] = (predictions['pred'] >= 0.5).astype(int)
+
+        # Check if the feature is numerical and needs binning
+        if X[feature].dtype in [np.float64, np.int64]:
+            # Perform equal-quantile binning if not already done
+            _, bins = pd.qcut(X[feature], q=10, retbins=True, duplicates='drop')
+            bin_labels = range(1, len(bins))
+            predictions['binned_feature'] = pd.cut(X[feature], bins=bins, labels=bin_labels)
+            protected_mask = predictions['binned_feature'] == protected_class
+        else:
+            protected_mask = predictions[feature] == protected_class
+
+        reference_mask = ~protected_mask  # Use the complement as the reference group
+
+        TP_FP_protected = predictions.loc[protected_mask, 'pred'].sum()
+        TP_FP_reference = predictions.loc[reference_mask, 'pred'].sum()
+
+        n_protected = protected_mask.sum()
+        n_reference = reference_mask.sum()
+
+        # Calculate AIR, handle division by zero if necessary
+        air = (TP_FP_protected / n_protected) / (TP_FP_reference / n_reference) if n_reference > 0 and n_protected > 0 else None
+
+        # Remove temporary binned feature column if it was added
+        if 'binned_feature' in predictions.columns:
+            predictions.drop(columns=['binned_feature'], inplace=True)
+
+        return air
+
+    # define Standardized Mean Difference (SMD) function
+    def calculate_SMD(feature, protected_class):
+        predictions = X_test.copy()
+        predictions['pred'] = model.predict(X_test)
+        #predictions['pred'] = (predictions['pred'] >= 0.5).astype(int)
+
+        # Check if the feature is numerical and needs binning
+        if X[feature].dtype in [np.float64, np.int64]:
+            # Perform equal-quantile binning if not already done
+            _, bins = pd.qcut(X[feature], q=10, retbins=True, duplicates='drop')
+            bin_labels = range(1, len(bins))
+            predictions['binned_feature'] = pd.cut(X[feature], bins=bins, labels=bin_labels)
+            protected_mask = predictions['binned_feature'] == protected_class
+        else:
+            protected_mask = predictions[feature] == protected_class
+
+        reference_mask = ~protected_mask  # Use the complement as the reference group
+
+        mean_protected = predictions[protected_mask]['pred'].mean()
+        mean_reference = predictions[reference_mask]['pred'].mean()
+
+        pooled_std = np.sqrt(((protected_mask.sum() - 1) * predictions[protected_mask]['pred'].std() ** 2 +
+                              (reference_mask.sum() - 1) * predictions[reference_mask]['pred'].std() ** 2) /
+                            (protected_mask.sum() + reference_mask.sum() - 2))
+
+        smd = (mean_protected - mean_reference) / pooled_std
+        return smd
+
+    # Function to evaluate fairness and visualize AIR
+    # Create separate output containers for AIR plot
+    air_plot_output = widgets.Output()
+
+    def plot_air(selected_pairs):
+        # Initialize lists to store AIR values and labels for the plot
+        air_values = []
+        labels = []
+
+        # Loop through each (feature, protected_class) pair
+        for feature, protected_class in selected_pairs:
+            # Calculate AIR for the current pair
+            air = calculate_air(feature, protected_class)
+            labels.append(f"{feature}: {protected_class}")
+            air_values.append(air)
+
+        with air_plot_output:
+          clear_output(wait=True)
+        # Adjust the plot size dynamically based on the number of pairs. Increase the vertical size factor as needed.
+        # Inside plot_air
+          air_values_filtered = [value if value is not None else -1 for value in air_values]  # Replace None with -1
+          labels_filtered = [label for label, value in zip(labels, air_values) if value is not None]  # Keep corresponding labels
+
+          plt.figure(figsize=(10, max(2, len(labels_filtered) * 1)))  # Adjust based on filtered labels
+          plt.barh(labels_filtered, air_values_filtered, color='skyblue')
+          plt.axvline(1, color='red', linestyle='--', label='Fairness (AIR=1)')
+          plt.xlabel('Adverse Impact Ratio (AIR)')
+          plt.ylabel('Protected Class')
+          plt.title('Adverse Impact Ratio Analysis')
+          plt.legend()
+          plt.tight_layout()
+          plt.show()
+
+    pr_plot_output = widgets.Output()
+    # Function to evaluate fairness and visualize AIR
+    def plot_pr(selected_pairs):
+        pr_values = []
+        labels = []
+
+        for feature, protected_class in selected_pairs:
+            pr = calculate_pr(feature, protected_class)
+            labels.append(f"{feature}: {protected_class}")
+            pr_values.append(pr)
+
+        # Plotting
+        with pr_plot_output:
+          clear_output(wait = True)
+          plt.figure(figsize=(10, max(2, len(selected_pairs) * 0.5)))
+          plt.barh(labels, pr_values, color='skyblue')
+          plt.axvline(1, color='red', linestyle='--', label='Fairness (PR=1)')
+          plt.xlabel('Precision Ratio (PR)')
+          plt.ylabel('Protected Class')
+          plt.title('Precision Ratio Analysis')
+          plt.legend()
+          plt.tight_layout()
+          plt.show()
+
+    smd_plot_output = widgets.Output()
+    def plot_smd(selected_pairs):
+        smd_values = []
+        labels = []
+
+        for feature, protected_class in selected_pairs:
+          smd = calculate_SMD(feature, protected_class)
+          labels.append(f"{feature}: {protected_class}")
+          smd_values.append(smd)
+
+        with smd_plot_output:
+          plt.figure(figsize=(10, max(2, len(selected_pairs) * 0.5)))
+          plt.barh(labels, smd_values, color='skyblue')
+          plt.axvline(0, color='red', linestyle='--', label='No Difference')
+          plt.xlabel('Standardized Mean Difference (SMD)')
+          plt.ylabel('Comparison')
+          plt.title('Standardized Mean Difference Analysis')
+          plt.legend()
+          plt.tight_layout()
+          plt.show()
+
+    # Widget for selecting sensitive attributes
+    sensitive_attr_widget = widgets.Dropdown(
+        options=X.columns,
+        description='Feature:',
+        disabled=False
+    )
+
+    # UI for specifying the protected class
+    protected_class_widget = widgets.Dropdown(
+        description='Protected Class:',
+        disabled=False
+    )
+
+    def update_protected_class_options(*args):
+        attr = sensitive_attr_widget.value
+        if X[attr].dtype == 'object' or X[attr].dtype.name == 'category':
+            # For categorical attributes
+            options = [(str(v), v) for v in X[attr].unique()]
+        else:
+            # For numerical attributes, perform binning
+            binned_values, bins = pd.cut(X[attr], bins=10, retbins=True, labels=range(1, 11))
+            options = [(f"Bin {i}: {round(bins[i-1], 2)} to {round(bins[i], 2)}", i) for i in range(1, len(bins))]
+
+        protected_class_widget.options = options
+        # Resetting the value to the first option to avoid selection errors
+        protected_class_widget.value = options[0][1]
+
+    sensitive_attr_widget.observe(update_protected_class_options, 'value')
+    update_protected_class_options()  # Call it once initially to set default options
+
+    add_button = widgets.Button(description='Add Feature/Class',
+                                button_style='success')
+    generate_plot_button = widgets.Button(description='Generate Disparity Plot',
+                                          button_style='info')
+
+    # Containers
+    global added_features_classes
+    added_features_classes = []  # Clear the list of added feature/class pairs
+
+    features_classes_container = widgets.Output()
+
+    # Callbacks
+    def add_feature_class(b):
+        #global added_features_classes
+        feature = sensitive_attr_widget.value
+        protected_class = protected_class_widget.value
+        added_features_classes.append((feature, protected_class))
+
+        # Display the current list of added features/classes
+        with features_classes_container:
             clear_output()
-            print("Added Feature/Protected Classes cleared.")
+            print("Added Feature/Protected Classes:")
+            for f, c in added_features_classes:
+                print(f"{f}: {c}")
 
-          # Optionally, clear the plot or reset any display related to the AIR analysis
-          # This depends on how the AIR plot is being displayed.
-          # For example, if using Output widget for the plot, clear it:
-          with pr_plot_output:
-            clear_output()
-          with air_plot_output:
-            clear_output()
-          with smd_plot_output:
-            clear_output()
+    # Adjusted Callback for Generating the AIR Plot
+    def generate_fairness_plot(b):
+        # Assuming plot_air is defined to take a list of (feature, protected_class) tuples
+        if task == 'classification':
+          plot_air(added_features_classes)
+          plot_pr(added_features_classes)
+        if task == 'regression':
+          plot_smd(added_features_classes)
+
+    # Link callbacks to buttons
+    add_button.on_click(add_feature_class)
+    # Link the corrected callback to the generate_plot_button
+    #with plot_output_container:
+    generate_plot_button.on_click(generate_fairness_plot)
 
 
-      # Link the clear_button to the clear_selections function
-      clear_button.on_click(clear_selections)
+    # Add a new button for clearing the selections and plot
+    clear_button = widgets.Button(description='Clear Selections', button_style='warning')
 
-      # Now display the UI elements
-      with fairness_tab:
-        display(widgets.VBox([sensitive_attr_widget,
-                protected_class_widget,
-                widgets.HBox([add_button, clear_button]),
-                generate_plot_button,
-                features_classes_container,
-                air_plot_output,
-                pr_plot_output,
-                smd_plot_output]))
+    # Function to handle the clearing operation
+    def clear_selections(b):
+        # global added_features_classes
+        # added_features_classes = []  # Clear the list of added feature/class pairs
+
+        # Clear the display of added feature/class pairs
+        with features_classes_container:
+          clear_output()
+          print("Added Feature/Protected Classes cleared.")
+
+        # Optionally, clear the plot or reset any display related to the AIR analysis
+        # This depends on how the AIR plot is being displayed.
+        # For example, if using Output widget for the plot, clear it:
+        with pr_plot_output:
+          clear_output()
+        with air_plot_output:
+          clear_output()
+        with smd_plot_output:
+          clear_output()
+
+
+    # Link the clear_button to the clear_selections function
+    clear_button.on_click(clear_selections)
+
+    # Now display the UI elements
+    with fairness_tab:
+      display(widgets.VBox([sensitive_attr_widget,
+              protected_class_widget,
+              widgets.HBox([add_button, clear_button]),
+              generate_plot_button,
+              features_classes_container,
+              air_plot_output,
+              pr_plot_output,
+              smd_plot_output]))
