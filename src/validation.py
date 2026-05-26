@@ -677,6 +677,14 @@ class ValidationFramework:
         tab.set_title(0, 'Data Imputation')                       # ipywidgets 7
         tab.set_title(1, 'Data Normalization')
 
+      # Re-enable widget rendering — safe no-op outside Colab.
+      # Needed if the Colab runtime restarted after the setup cell ran.
+      try:
+        from google.colab import output as _co
+        _co.enable_custom_widget_manager()
+      except ImportError:
+        pass
+
       print("DEBUG data_preprocess: calling display(tab)...")
       display(tab)
       print("DEBUG data_preprocess: display(tab) returned.")
