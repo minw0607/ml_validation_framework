@@ -970,72 +970,77 @@ class ValidationFramework:
       #display(pearson_out)
 
 
-######################### TAB #################################
-    # display spearman correlation and correlation heatmap
-    # Handling Multicollinear Features
+    # ── Spearman Correlation ──────────────────────────────────────────────
     spearman_corr_tab.clear_output()
     with spearman_corr_tab:
-      df = self.data
-    target_variable = self.target
-    num_vars = df.drop(columns=[target_variable]).select_dtypes(include=[np.number]).columns
+      df_sp          = self.data
+      target_variable = self.target
+      num_vars_sp    = [c for c in df_sp.select_dtypes(include=[np.number]).columns
+                        if c != target_variable]
 
-    spearman_out = widgets.Output()
+      sp_action_out = widgets.Output()
 
-    threshold_slider_sp = widgets.FloatSlider(
-        value=0.1, min=0, max=1, step=0.01, description='Threshold:')
-    btn_sp = widgets.Button(description='Apply Threshold', button_style='success')
-    btn_remove_sp = widgets.Button(description='Remove Features', button_style='success')
-    btn_revert_sp = widgets.Button(description='Revert', icon='reply', button_style='warning')
+      threshold_slider_sp = widgets.FloatSlider(
+          value=0.1, min=0, max=1, step=0.01, description='Threshold:',
+          style={'description_width': 'initial'})
+      btn_sp        = widgets.Button(description='Apply Threshold', button_style='success')
+      btn_remove_sp = widgets.Button(description='Remove Features',  button_style='success')
+      btn_revert_sp = widgets.Button(description='Revert', icon='reply', button_style='warning')
 
-    def draw_spearman(threshold=0.1):
-      corr = df[num_vars].apply(lambda x: x.corr(df[target_variable], method='spearman'))
-      pos = corr[abs(corr) >= threshold]
-      neg = corr[abs(corr) < threshold]
-      plt.clf()
-      plt.figure(figsize=(10, 6))
-      plt.bar(neg.index, neg.values, color='grey')
-      plt.bar(pos.index, pos.values, color='steelblue')
-      plt.xticks(rotation=90)
-      plt.axhline(threshold, color='r', linestyle='--', label=f'+{threshold}')
-      plt.axhline(-threshold, color='r', linestyle='--', label=f'-{threshold}')
-      plt.title(f'Spearman Correlation with {target_variable}')
-      plt.tight_layout()
-      plt.show()
+      def draw_spearman(threshold=0.1):
+        corr = df_sp[num_vars_sp].apply(
+            lambda x: x.corr(df_sp[target_variable], method='spearman'))
+        above = corr[abs(corr) >= threshold]
+        below = corr[abs(corr) <  threshold]
+        plt.figure(figsize=(10, 6))
+        plt.bar(below.index, below.values, color='grey',      label='Below threshold')
+        plt.bar(above.index, above.values, color='steelblue', label='Above threshold')
+        plt.xticks(rotation=90)
+        plt.axhline( threshold, color='r', linestyle='--')
+        plt.axhline(-threshold, color='r', linestyle='--')
+        plt.title(f'Spearman Rank Correlation with {target_variable}')
+        plt.xlabel('Feature'); plt.ylabel('Spearman r')
+        plt.legend(); plt.tight_layout()
+        plt.show()
 
-    def on_apply_sp(b):
-      with spearman_corr_tab:
-        clear_output()
-        display(widgets.HBox([threshold_slider_sp, btn_sp]))
-        display(widgets.HBox([btn_remove_sp, btn_revert_sp]))
-        draw_spearman(threshold_slider_sp.value)
-        display(spearman_out)
+      def on_apply_sp(b):
+        with spearman_corr_tab:
+          clear_output()
+          display(widgets.HBox([threshold_slider_sp, btn_sp]))
+          display(widgets.HBox([btn_remove_sp, btn_revert_sp]))
+          draw_spearman(threshold_slider_sp.value)
+          print(f'Threshold set to {threshold_slider_sp.value:.2f}.')
+          display(sp_action_out)
 
-    def on_remove_sp(b):
-      threshold = threshold_slider_sp.value
-      corr = df.drop(target_variable, axis=1).apply(
-          lambda x: x.corr(df[target_variable], method='spearman'))
-      to_drop = corr[abs(corr) < threshold].index.tolist()
-      self.data_copy = self.data
-      self.data = self.data.drop(columns=to_drop)
-      with spearman_out:
-        spearman_out.clear_output()
-        display(Markdown(f"Removed {len(to_drop)} feature(s): `{', '.join(to_drop)}`"))
-        display(self.data)
+      def on_remove_sp(b):
+        threshold = threshold_slider_sp.value
+        corr = df_sp[num_vars_sp].apply(
+            lambda x: x.corr(df_sp[target_variable], method='spearman'))
+        to_drop = corr[abs(corr) < threshold].index.tolist()
+        self.data_copy = self.data
+        self.data = self.data.drop(columns=to_drop)
+        with sp_action_out:
+          sp_action_out.clear_output()
+          display(Markdown(
+              f"Removed **{len(to_drop)}** feature(s) below threshold "
+              f"{threshold:.2f}: `{', '.join(to_drop)}`"))
+          display(self.data.head())
 
-    def on_revert_sp(b):
-      self.data = self.data_copy
-      with spearman_out:
-        spearman_out.clear_output()
-        display(Markdown("Reverted — all features restored."))
+      def on_revert_sp(b):
+        self.data = self.data_copy
+        with sp_action_out:
+          sp_action_out.clear_output()
+          display(Markdown('Reverted — all features restored.'))
+          display(self.data.head())
 
-    btn_sp.on_click(on_apply_sp)
-    btn_remove_sp.on_click(on_remove_sp)
-    btn_revert_sp.on_click(on_revert_sp)
+      btn_sp.on_click(on_apply_sp)
+      btn_remove_sp.on_click(on_remove_sp)
+      btn_revert_sp.on_click(on_revert_sp)
 
-    display(widgets.HBox([threshold_slider_sp, btn_sp]))
-    display(widgets.HBox([btn_remove_sp, btn_revert_sp]))
-    draw_spearman(threshold_slider_sp.value)
-    display(spearman_out)
+      display(widgets.HBox([threshold_slider_sp, btn_sp]))
+      display(widgets.HBox([btn_remove_sp, btn_revert_sp]))
+      draw_spearman(threshold_slider_sp.value)
+      display(sp_action_out)
 
 ######################### TAB #################################
     # display permutation based feature importance
@@ -1393,6 +1398,10 @@ class ValidationFramework:
         'alpha': 0.0001,
     }
 
+    n_classes    = len(np.unique(y))
+    is_multiclass = (task == 'classification') and (n_classes > 2)
+    avg = 'macro' if is_multiclass else 'binary'
+
     if task == 'classification':
       models = {
         'Logistic Regression':  LogisticRegression(**params_log),
@@ -1405,11 +1414,11 @@ class ValidationFramework:
         'MLP':                  MLPClassifier(**param_mlp),
       }
       metrics = {
-        'AUC':       roc_auc_score,
+        'AUC':       None,   # computed separately to handle binary vs multi-class
         'Accuracy':  accuracy_score,
-        'Precision': lambda y, yh: precision_score(y, yh, zero_division=0),
-        'Recall':    lambda y, yh: recall_score(y, yh, zero_division=0),
-        'F1 Score':  lambda y, yh: f1_score(y, yh, zero_division=0),
+        'Precision': lambda y, yh, a=avg: precision_score(y, yh, average=a, zero_division=0),
+        'Recall':    lambda y, yh, a=avg: recall_score(y, yh, average=a, zero_division=0),
+        'F1 Score':  lambda y, yh, a=avg: f1_score(y, yh, average=a, zero_division=0),
       }
     elif task == 'regression':
       models = {
@@ -1463,22 +1472,25 @@ class ValidationFramework:
               self.models[name] = model
 
               # Predict on test set
-              if 'AUC' in selected_metrics:
-                y_preds = model.predict_proba(X_test)[:, 1]
-              else:
-                y_preds = model.predict(X_test)
-              #y_pred = model.predict_proba(X_test)[:, 1]
-              #auc = roc_auc_score(y_test, y_pred)
-              results_row = {'Model': name}
-              #new_row = {'Model': name, 'AUC': auc}
-              for metric_name in selected_metrics:
-                # Compute selected metric
-                if task == 'classification':
-                  score = metrics[metric_name](y_test, y_preds if metric_name == 'AUC' else y_preds.round())
-                elif task == 'regression':
-                  score = metrics[metric_name](y_test, y_preds)
+              y_pred  = model.predict(X_test)                       # class labels / values
+              y_proba = (model.predict_proba(X_test)
+                         if hasattr(model, 'predict_proba') else None)
 
-                # Add score to results row
+              results_row = {'Model': name}
+              for metric_name in selected_metrics:
+                if task == 'classification':
+                  if metric_name == 'AUC':
+                    if y_proba is None:
+                      score = float('nan')
+                    elif is_multiclass:
+                      score = roc_auc_score(y_test, y_proba, multi_class='ovr')
+                    else:
+                      score = roc_auc_score(y_test, y_proba[:, 1])
+                  else:
+                    score = metrics[metric_name](y_test, y_pred)
+                else:  # regression
+                  score = metrics[metric_name](y_test, y_pred)
+
                 results_row[metric_name] = score
 
               # Add results row to results DataFrame
