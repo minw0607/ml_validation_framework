@@ -941,10 +941,18 @@ class ValidationFramework:
       # Define a function to handle the button click event
       def on_button_remove_clicked(b):
           threshold = threshold_slider.value
+          df_now = self.data
+          # Compute full below-threshold list on current data
+          num_now = df_now.drop(target_var, axis=1).select_dtypes(include=[np.number]).columns
+          corr_now = df_now[num_now].apply(lambda x: x.corr(df_now[target_var]))
+          all_below = [c for c in corr_now[abs(corr_now) < threshold].index]
+          # Split into: still present (will be removed) vs already gone (prior step)
+          to_drop        = [c for c in all_below if c in df_now.columns]
+          already_absent = [c for c in all_below if c not in df_now.columns]
+
           self.data_copy = self.data.copy()
-          old_cols = set(self.data.columns)
           self.data = pearson_remove_vars(threshold)
-          removed = sorted(old_cols - set(self.data.columns))
+          removed = sorted(set(df_now.columns) - set(self.data.columns))
           pearson_status_out.clear_output(wait=True)
           with pearson_status_out:
               if removed:
@@ -952,8 +960,18 @@ class ValidationFramework:
                   display(HTML(
                       f'<div style="background:rgba(52,168,83,0.12);border:1px solid rgba(52,168,83,0.5);'
                       f'border-radius:6px;padding:10px 14px;margin:6px 0">'
-                      f'✅ <b>{len(removed)} feature(s) removed</b> (Pearson |r| &lt; {threshold}):<ul style="margin:4px 0 0 16px">{items}</ul>'
+                      f'✅ <b>{len(removed)} feature(s) removed</b> (Pearson |r| &lt; {threshold}):'
+                      f'<ul style="margin:4px 0 0 16px">{items}</ul>'
                       f'<span style="font-size:12px;opacity:0.7">{self.data.shape[1]} features remaining.</span></div>'
+                  ))
+              elif already_absent:
+                  items = ''.join(f'<li><code>{f}</code></li>' for f in sorted(already_absent))
+                  display(HTML(
+                      f'<div style="background:rgba(66,133,244,0.12);border:1px solid rgba(66,133,244,0.5);'
+                      f'border-radius:6px;padding:10px 14px;margin:6px 0">'
+                      f'ℹ️ No new removals. The following feature(s) are below the threshold but were '
+                      f'already removed in a prior analysis step:'
+                      f'<ul style="margin:4px 0 0 16px">{items}</ul></div>'
                   ))
               else:
                   display(HTML(
@@ -998,7 +1016,14 @@ class ValidationFramework:
       display(widgets.HBox([threshold_slider, button_threshold]))
       display(widgets.HBox([button_remove, button_revert]))
       display(pearson_status_out)
-      create_corr_plot(threshold_slider.value)
+      try:
+          create_corr_plot(threshold_slider.value)
+      except Exception as _e:
+          display(HTML(
+              f'<div style="background:rgba(255,193,7,0.12);border:1px solid rgba(255,193,7,0.5);'
+              f'border-radius:6px;padding:10px 14px;margin:6px 0">'
+              f'⚠️ Could not render Pearson chart: {_e}</div>'
+          ))
 
       # Create an output widget for printing the confirmation message and updated dataset
       #pearson_out = widgets.Output()
@@ -1057,13 +1082,25 @@ class ValidationFramework:
 
       def on_remove_sp(b):
         threshold = threshold_slider_sp.value
-        # Recompute on CURRENT self.data so already-removed columns are excluded
-        curr_df   = self.data
-        live_num  = [c for c in curr_df.select_dtypes(include=[np.number]).columns
-                     if c != target_variable]
+        curr_df  = self.data
+        live_num = [c for c in curr_df.select_dtypes(include=[np.number]).columns
+                    if c != target_variable]
         corr = curr_df[live_num].apply(
             lambda x: x.corr(curr_df[target_variable], method='spearman'))
         to_drop = [c for c in corr[abs(corr) < threshold].index if c in curr_df.columns]
+
+        # Detect features that were below threshold in the ORIGINAL snapshot
+        # but have already been removed by a prior analysis step
+        try:
+            orig_corr     = df_sp[num_vars_sp].apply(
+                lambda x: x.corr(df_sp[target_variable], method='spearman'))
+            already_absent = sorted(
+                c for c in orig_corr[abs(orig_corr) < threshold].index
+                if c not in curr_df.columns
+            )
+        except Exception:
+            already_absent = []
+
         self.data_copy = self.data.copy()
         self.data = self.data.drop(columns=to_drop, errors='ignore')
         sp_action_out.clear_output(wait=True)
@@ -1076,6 +1113,15 @@ class ValidationFramework:
                   f'✅ <b>{len(to_drop)} feature(s) removed</b> (Spearman |r| &lt; {threshold:.2f}):'
                   f'<ul style="margin:4px 0 0 16px">{items}</ul>'
                   f'<span style="font-size:12px;opacity:0.7">{self.data.shape[1]} features remaining.</span></div>'
+              ))
+          elif already_absent:
+              items = ''.join(f'<li><code>{f}</code></li>' for f in already_absent)
+              display(HTML(
+                  f'<div style="background:rgba(66,133,244,0.12);border:1px solid rgba(66,133,244,0.5);'
+                  f'border-radius:6px;padding:10px 14px;margin:6px 0">'
+                  f'ℹ️ No new removals. The following feature(s) are below the threshold but were '
+                  f'already removed in a prior analysis step:'
+                  f'<ul style="margin:4px 0 0 16px">{items}</ul></div>'
               ))
           else:
               display(HTML(
@@ -1120,7 +1166,14 @@ class ValidationFramework:
 
       display(widgets.HBox([threshold_slider_sp, btn_sp]))
       display(widgets.HBox([btn_remove_sp, btn_revert_sp]))
-      draw_spearman(threshold_slider_sp.value)
+      try:
+          draw_spearman(threshold_slider_sp.value)
+      except Exception as _e:
+          display(HTML(
+              f'<div style="background:rgba(255,193,7,0.12);border:1px solid rgba(255,193,7,0.5);'
+              f'border-radius:6px;padding:10px 14px;margin:6px 0">'
+              f'⚠️ Could not render Spearman chart: {_e}</div>'
+          ))
       display(sp_action_out)
 
 ######################### TAB #################################
