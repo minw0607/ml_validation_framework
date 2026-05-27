@@ -87,10 +87,15 @@ class ValidationFramework:
     self.data_dir = self._resolve_data_dir(data_dir)
 
   @staticmethod
-  def _section(icon, title, border_color, bg_color):
-    """Return an HTML section-header string (replaces widgets.Tab)."""
+  def _section(icon, title, border_color, bg_color=None):
+    """Return an HTML section-header string (replaces widgets.Tab).
+
+    Uses a translucent neutral background so the header looks good in both
+    Colab light mode and dark mode.  The accent colour shows only on the
+    left border, keeping the background subtle.
+    """
     return (
-      f'<div style="background:{bg_color};padding:10px 14px;'
+      f'<div style="background:rgba(128,128,128,0.12);padding:10px 14px;'
       f'border-left:4px solid {border_color};border-radius:4px;'
       f'margin:16px 0 6px;font-size:15px;font-weight:bold">'
       f'{icon} {title}</div>'
@@ -2302,24 +2307,31 @@ class ValidationFramework:
     }
 
     def evaluate_score(y_true, y_pred, metric, threshold=0.5):
-      # Convert probabilities to binary class labels based on the threshold
       if metric not in metric_functions:
           raise ValueError(f"Unsupported metric: {metric}")
 
+      n_cls = len(np.unique(y_true))
+
       if task == 'classification' and metric == 'AUC':
-          if len(np.unique(y_true)) == 2:
-              return metric_functions[metric](y_true, y_pred) # AUC uses probabilities, not labels
-          else:
-              # Return a default score or np.nan if not both classes are present
-              return 0.5  # a random guess
+          try:
+              if n_cls == 2:
+                  # binary: y_pred should be 1-D probability of positive class
+                  score_arr = y_pred if y_pred.ndim == 1 else y_pred[:, 1]
+                  return roc_auc_score(y_true, score_arr)
+              else:
+                  # multi-class: y_pred must be full probability matrix
+                  score_arr = y_pred if y_pred.ndim > 1 else y_pred.reshape(-1, 1)
+                  return roc_auc_score(y_true, score_arr if score_arr.ndim > 1 else y_pred,
+                                       multi_class='ovr')
+          except Exception:
+              return float('nan')
 
       if task == 'classification' and metric in ['ACC', 'F1']:
-        y_pred_labels = (y_pred >= threshold).astype(int)
-
-        if metric == 'F1':
-              # Handle the case where there are no positive predictions or labels
-              return metric_functions[metric](y_true, y_pred_labels, zero_division=0)
-        else:
+          y_pred_labels = (y_pred >= threshold).astype(int) if y_pred.ndim == 1 else y_pred.argmax(axis=1)
+          if metric == 'F1':
+              avg = 'macro' if n_cls > 2 else 'binary'
+              return metric_functions[metric](y_true, y_pred_labels, average=avg, zero_division=0)
+          else:
               return metric_functions[metric](y_true, y_pred_labels)
       else:
           return metric_functions[metric](y_true, y_pred)  # regression metric
@@ -3062,7 +3074,8 @@ class ValidationFramework:
         plt.title(f"One-Way Weak Spot for {feature1}")
         plt.xlabel(feature1)
         plt.ylabel("Frequency")
-        plt.colorbar(cm.ScalarMappable(norm=mcolors.Normalize(0, 1), cmap=cmap), label="Accuracy")
+        plt.colorbar(cm.ScalarMappable(norm=mcolors.Normalize(0, 1), cmap=cmap),
+                     ax=plt.gca(), label="Accuracy")
 
         plt.show()
 
@@ -3226,7 +3239,9 @@ class ValidationFramework:
 
           # Evaluate model performance on perturbed data
           if task == 'classification':
-              y_pred_perturbed = model.predict_proba(X_test_perturbed)[:, 1]
+              proba = model.predict_proba(X_test_perturbed)
+              # Use full probability matrix for multi-class; binary column-1 otherwise
+              y_pred_perturbed = proba if proba.shape[1] > 2 else proba[:, 1]
           else:
               y_pred_perturbed = model.predict(X_test_perturbed)
 
@@ -3282,13 +3297,15 @@ class ValidationFramework:
         output_robust.clear_output()
         with output_robust:
             selected_features = list(feature_selector.value)
-            robust_plot(X_test, y_test, selected_features, metric='AUC')
+            robust_metric = 'AUC' if task == 'classification' else 'MSE'
+            robust_plot(X_test, y_test, selected_features, metric=robust_metric)
 
     run_button.on_click(on_run_button_clicked)
 
     with output_robust:
       selected_features = list(feature_selector.value)
-      robust_plot(X_test, y_test, selected_features, metric='AUC')
+      robust_metric = 'AUC' if task == 'classification' else 'MSE'
+      robust_plot(X_test, y_test, selected_features, metric=robust_metric)
 
     with robust_tab:
       # Display the widgets
