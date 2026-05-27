@@ -912,6 +912,7 @@ class ValidationFramework:
           threshold_slider.value = threshold
           display(widgets.HBox([threshold_slider, button_threshold]))
           display(widgets.HBox([button_remove, button_revert]))
+          display(pearson_status_out)   # keep status banner in layout after threshold change
           create_corr_plot(threshold)
 
           print("The threshold of Pearson Correlation is set to be {}.".format(threshold))
