@@ -929,11 +929,12 @@ class ValidationFramework:
 
       # Define a function to remove the variables with correlation less than the threshold
       def pearson_remove_vars(threshold):
-          # Compute the Pearson correlation coefficients between the variables and the target variable
+          # Always compute on current self.data so prior removals are respected
           df = self.data
           corr = df.drop(target_var, axis=1).apply(lambda x: x.corr(df[target_var]))
-          corr_vars = corr[abs(corr) < threshold].index.tolist()
-          df_corr = df.drop(columns = corr_vars)
+          # Only keep columns that still exist (guards against cross-section removals)
+          corr_vars = [c for c in corr[abs(corr) < threshold].index if c in df.columns]
+          df_corr = df.drop(columns=corr_vars, errors='ignore')
           return df_corr
 
 
@@ -1056,24 +1057,62 @@ class ValidationFramework:
 
       def on_remove_sp(b):
         threshold = threshold_slider_sp.value
-        corr = df_sp[num_vars_sp].apply(
-            lambda x: x.corr(df_sp[target_variable], method='spearman'))
-        to_drop = corr[abs(corr) < threshold].index.tolist()
-        self.data_copy = self.data
-        self.data = self.data.drop(columns=to_drop)
+        # Recompute on CURRENT self.data so already-removed columns are excluded
+        curr_df   = self.data
+        live_num  = [c for c in curr_df.select_dtypes(include=[np.number]).columns
+                     if c != target_variable]
+        corr = curr_df[live_num].apply(
+            lambda x: x.corr(curr_df[target_variable], method='spearman'))
+        to_drop = [c for c in corr[abs(corr) < threshold].index if c in curr_df.columns]
+        self.data_copy = self.data.copy()
+        self.data = self.data.drop(columns=to_drop, errors='ignore')
+        sp_action_out.clear_output(wait=True)
         with sp_action_out:
-          sp_action_out.clear_output()
-          display(Markdown(
-              f"Removed **{len(to_drop)}** feature(s) below threshold "
-              f"{threshold:.2f}: `{', '.join(to_drop)}`"))
-          display(self.data.head())
+          if to_drop:
+              items = ''.join(f'<li><code>{f}</code></li>' for f in to_drop)
+              display(HTML(
+                  f'<div style="background:rgba(52,168,83,0.12);border:1px solid rgba(52,168,83,0.5);'
+                  f'border-radius:6px;padding:10px 14px;margin:6px 0">'
+                  f'✅ <b>{len(to_drop)} feature(s) removed</b> (Spearman |r| &lt; {threshold:.2f}):'
+                  f'<ul style="margin:4px 0 0 16px">{items}</ul>'
+                  f'<span style="font-size:12px;opacity:0.7">{self.data.shape[1]} features remaining.</span></div>'
+              ))
+          else:
+              display(HTML(
+                  f'<div style="background:rgba(255,193,7,0.12);border:1px solid rgba(255,193,7,0.5);'
+                  f'border-radius:6px;padding:10px 14px;margin:6px 0">'
+                  f'⚠️ No features below threshold {threshold:.2f} — dataset unchanged.</div>'
+              ))
 
       def on_revert_sp(b):
-        self.data = self.data_copy
-        with sp_action_out:
-          sp_action_out.clear_output()
-          display(Markdown('Reverted — all features restored.'))
-          display(self.data.head())
+        if hasattr(self, 'data_copy') and self.data_copy is not None:
+            restored = sorted(set(self.data_copy.columns) - set(self.data.columns))
+            self.data = self.data_copy.copy()
+            sp_action_out.clear_output(wait=True)
+            with sp_action_out:
+                if restored:
+                    items = ''.join(f'<li><code>{f}</code></li>' for f in restored)
+                    display(HTML(
+                        f'<div style="background:rgba(66,133,244,0.12);border:1px solid rgba(66,133,244,0.5);'
+                        f'border-radius:6px;padding:10px 14px;margin:6px 0">'
+                        f'↩️ <b>{len(restored)} feature(s) restored:</b>'
+                        f'<ul style="margin:4px 0 0 16px">{items}</ul>'
+                        f'<span style="font-size:12px;opacity:0.7">Dataset back to {self.data.shape[1]} features.</span></div>'
+                    ))
+                else:
+                    display(HTML(
+                        '<div style="background:rgba(66,133,244,0.12);border:1px solid rgba(66,133,244,0.5);'
+                        'border-radius:6px;padding:10px 14px;margin:6px 0">'
+                        '↩️ Dataset reverted — all features restored.</div>'
+                    ))
+        else:
+            sp_action_out.clear_output(wait=True)
+            with sp_action_out:
+                display(HTML(
+                    '<div style="background:rgba(255,193,7,0.12);border:1px solid rgba(255,193,7,0.5);'
+                    'border-radius:6px;padding:10px 14px;margin:6px 0">'
+                    '⚠️ Nothing to revert — no features have been removed yet.</div>'
+                ))
 
       btn_sp.on_click(on_apply_sp)
       btn_remove_sp.on_click(on_remove_sp)
@@ -1316,9 +1355,12 @@ class ValidationFramework:
             raise RuntimeError('no_importance')
         importance_score = importance.importances_mean
         X = df.drop(target_variable, axis=1)
-        cols_to_keep = importance_score >= threshold
-        cols_to_remove = X.columns[~cols_to_keep]
-        return df.drop(cols_to_remove, axis=1)
+        # Guard: feature count may differ if prior sections already removed features
+        if len(importance_score) != X.shape[1]:
+            raise RuntimeError('importance_stale')
+        cols_to_keep   = importance_score >= threshold
+        cols_to_remove = [c for c in X.columns[~cols_to_keep] if c in df.columns]
+        return df.drop(cols_to_remove, axis=1, errors='ignore')
 
       # Define a function to handle the button click event
       def on_button_remove_clicked(b):
@@ -1334,7 +1376,18 @@ class ValidationFramework:
                 return
             self.data_copy = self.data.copy()
             old_cols = set(self.data.columns)
-            self.data = remove_variables(threshold)
+            try:
+                self.data = remove_variables(threshold)
+            except RuntimeError as _e:
+                if 'stale' in str(_e):
+                    display(HTML(
+                        '<div style="background:rgba(255,193,7,0.12);border:1px solid rgba(255,193,7,0.5);'
+                        'border-radius:6px;padding:10px 14px;margin:6px 0">'
+                        '⚠️ Feature set changed since importance was last computed. '
+                        'Please re-select a fitter and click <b>Confirm</b> to recompute.</div>'
+                    ))
+                    return
+                raise
             removed = sorted(old_cols - set(self.data.columns))
             if removed:
                 items = ''.join(f'<li><code>{f}</code></li>' for f in removed)
