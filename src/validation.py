@@ -1177,328 +1177,243 @@ class ValidationFramework:
       display(sp_action_out)
 
 ######################### TAB #################################
-    # display permutation based feature importance
+    # display permutation based feature importance (auto-run with Random Forest)
     importance_tab.clear_output()
     with importance_tab:
-      # take attributes from the main class
-      df = self.data
       target_variable = self.target
       test_ratio = self.test_ratio
       random_state = self.random
-      # declare the feature importance which will be used by multiple functions
-      global feature_importance
 
-      # creat an output to display the results within the tab
       output_importance = widgets.Output()
 
-      def perm_importance(df, fitter):
-        # First drop any rows with missing values. Note: this will be refined later
-        #df = self.data
-        df = df.dropna()
-        # get numerical variables
-        num_vars = df.select_dtypes(include=['float64', 'int64']).columns
-        # get categorical variables
-        cat_vars = df.select_dtypes(include=['object', 'category', 'bool']).columns
+      # ── task-aware model builder ───────────────────────────────
+      def _build_fitter(name):
+        is_clf = self.task in ('binary_classification', 'multiclass_classification')
+        if name == 'random forest':
+          return (RandomForestClassifier(n_estimators=100, max_samples=0.2, random_state=42)
+                  if is_clf else
+                  RandomForestRegressor(n_estimators=100, max_samples=0.2, random_state=42))
+        elif name == 'gradient boosting machine':
+          return (GradientBoostingClassifier(n_estimators=100, learning_rate=0.1,
+                                             max_depth=7, random_state=42)
+                  if is_clf else
+                  GradientBoostingRegressor(n_estimators=100, learning_rate=0.1,
+                                            max_depth=7, random_state=42))
+        elif name == 'logistic regression':
+          return LogisticRegression(max_iter=1000)
+        else:
+          raise ValueError(f'Unknown fitter: {name}')
 
+      # ── compute permutation importance ─────────────────────────
+      def perm_importance(df, fitter):
+        df = df.dropna()
+        num_vars = df.select_dtypes(include=['float64', 'int64']).columns
+        cat_vars = df.select_dtypes(include=['object', 'category', 'bool']).columns
         if num_vars.empty or cat_vars.empty:
-          # With no numerical or categorical variable at all, no need to encode
           df_encoded = df
         else:
-        # apply label encoding to the categorical variables
           le = LabelEncoder()
           df_cat_encoded = df[cat_vars].apply(le.fit_transform)
-          # create a new dataset with the original numerical variables and encoded categorical variables
           df_encoded = pd.concat([df[num_vars], df_cat_encoded], axis=1)
-
         X = df_encoded.drop(target_variable, axis=1)
         y = df_encoded[target_variable]
-        # split the data into training/validation and test sets
-        # Using the global test size ratio and random state to ensure consistency
-        X_trainval, X_test, y_trainval, y_test = train_test_split(X, y,
-                                                            test_size= test_ratio,
-                                                            random_state=random_state)
-        # split the training/validation set into training and validation sets
-        # test ratio set to be 0.25
-        # the importance feature is tested on the validation dataset
-        X_train, X_val, y_train, y_val = train_test_split(X_trainval, y_trainval,
-                                                          test_size=0.25,
-                                                          random_state=42)
-
-        # train the fitter with the training data
+        X_trainval, X_test, y_trainval, y_test = train_test_split(
+            X, y, test_size=test_ratio, random_state=random_state)
+        X_train, X_val, y_train, y_val = train_test_split(
+            X_trainval, y_trainval, test_size=0.25, random_state=42)
         fitter.fit(X_train, y_train)
-        # calculate permuation importance using the fitted model based on validation dataset
-        #for i in tqdm(range(100), desc='Processing...', unit='%'):
-        #print("Calculating permuation based feature importance...")
-        perm_importance = permutation_importance(fitter, X_val, y_val, n_jobs=-1, random_state=42)
+        result = permutation_importance(fitter, X_val, y_val, n_jobs=-1, random_state=42)
+        return result, list(X.columns)   # importance result + feature names captured at run time
 
-        #print("done.")
+      # ── chart renderer ─────────────────────────────────────────
+      def perm_importance_plot(imp_result, feature_names, threshold, fitter_name):
+        scores = imp_result.importances_mean
+        sorted_idx = scores.argsort()
+        fig, ax = plt.subplots(figsize=(8, max(4, len(feature_names) * 0.35)))
+        colors = ['#d73027' if scores[i] < threshold else '#4575b4' for i in sorted_idx]
+        ax.barh(range(len(sorted_idx)), scores[sorted_idx], color=colors)
+        ax.set_yticks(range(len(sorted_idx)))
+        ax.set_yticklabels([feature_names[i] for i in sorted_idx])
+        ax.axvline(x=threshold, color='r', linestyle='--', linewidth=1.5,
+                   label=f'Threshold = {threshold:.2f}  (red = below)')
+        ax.legend(fontsize=9)
+        ax.set_title(f'Permutation Importance — {fitter_name}')
+        ax.set_xlabel('Mean Importance Score')
+        plt.tight_layout()
+        plt.show()
 
-        return perm_importance
-
-      #display('check')
-      def perm_importance_plot(perm_importance, threshold=0.1):
-        # display the importance scores in a bar chart
-        feature_importance = perm_importance.importances_mean
-
-        X = df.drop(target_variable, axis=1)
-        feature_names = X.columns
-        sorted_idx = feature_importance.argsort()
-
-        with output_importance:
-          plt.barh(range(len(sorted_idx)), feature_importance[sorted_idx])
-          plt.yticks(range(len(sorted_idx)), feature_names[sorted_idx])
-          plt.axvline(x=threshold, color='r', linestyle='--')
-          plt.title('Permutation Importance based on {}'.format(fitter_dropdown.value))
-          plt.xlabel('Feature Importance Score')
-          plt.show()
-
-      # Create a dropdown widget for choosing the fitter
-      fitter_list = ['logistic regression',
-                    'random forest',
-                    'gradient boosting machine',
-                    'isolation forest']
+      # ── fitter selector (optional re-run) ─────────────────────
+      is_clf = self.task in ('binary_classification', 'multiclass_classification')
+      fitter_opts = ['random forest', 'gradient boosting machine']
+      if is_clf:
+        fitter_opts.append('logistic regression')
       fitter_dropdown = widgets.Dropdown(
-        options=['select a fitter']+ fitter_list,
-        description='Fitter:',
-        value = 'select a fitter')
+          options=fitter_opts, value='random forest',
+          description='Re-run with:', style={'description_width': 'initial'})
+      fitter_confirm_button = widgets.Button(description='Re-run',
+                                              button_style='primary',
+                                              layout=widgets.Layout(width='100px'))
 
-      # Create a button widget to confirm the fitter
-      fitter_confirm_button = widgets.Button(description='Confirm',
-                                      button_style='success')
-
-      # create a progress bar for calculating feature importance
-      progress_bar = widgets.IntProgress(
-                        value=1,
-                        min=0,
-                        max=10,
-                        step=1,
-                        description='Calculating:',
-                        bar_style='success',  # 'success', 'info', 'warning', 'danger' or ''
-                        orientation='horizontal')
-
-      # Define a function to handle the button click event
-      def on_button_fitter_click(b):
-        if fitter_dropdown.value == 'select a fitter':
-          with output_importance:
-            display(HTML(
-                '<div style="background:rgba(255,193,7,0.12);border:1px solid rgba(255,193,7,0.5);'
-                'border-radius:6px;padding:10px 14px;margin:6px 0">'
-                '⚠️ Please select a fitter from the dropdown first.</div>'
-            ))
-          return
-        elif fitter_dropdown.value == 'logistic regression':
-          fitter = LogisticRegression(max_iter=1000)
-        elif fitter_dropdown.value == 'random forest':
-          fitter = RandomForestRegressor(n_estimators=100, max_samples = 0.2,
-                                        random_state=42)
-        elif fitter_dropdown.value == 'gradient boosting machine':
-          fitter = GradientBoostingClassifier(n_estimators = 100, learning_rate=0.1,
-                                              max_depth = 7,
-                                              random_state = 42)
-        elif fitter_dropdown.value == 'isolation forest':
-          fitter = IsolationForest(n_estimators= 100, max_samples= 0.2,
-                                  random_state=42)
-
-        with output_importance:
-          display(Markdown('The fitter is chosen to be {}.'.format(fitter_dropdown.value)))
-          # set the width of the description
-          #int_progress.layout.width = '500px'
-
-          display(progress_bar)
-          # start with a new line (otherwise it won't display properly)
-          output_importance.append_stdout('\n')
-
-          for i in range(9):
-            if i==0:
-              global importance # delcare as global variable to be used by other functions
-
-              importance = perm_importance(self.data, fitter)
-
-            # Update the progress bar as the program runs
-            time.sleep(0.2)
-            progress_bar.value = i+2
-
-          # plot the feature importance bar chart
-          # start with a new line (otherwise it won't display properly)
-          #output_importance.append_stdout('\n')
-          perm_importance_plot(perm_importance = importance)
-
-      # Attach the button click event to the button widget
-      fitter_confirm_button.on_click(on_button_fitter_click)
-
-
-      # Create the widget to select the threshold
+      # ── threshold controls ─────────────────────────────────────
       threshold_importance_slider = widgets.FloatSlider(
-          value=0.1,
-          min=0,
-          max=1,
-          step=0.01,
-          description='Threshold:',
-          orientation='horizontal')
-
-      # create a button widget to increase slider value
-      increase_button = widgets.Button(description='+',
-                                      button_style='primary',
-                                      layout=widgets.Layout(width='auto'))
-
-      # create a button widget to decrease slider value
-      decrease_button = widgets.Button(description='-',
-                                      button_style='primary',
-                                      layout=widgets.Layout(width='auto'))
+          value=0.1, min=0, max=1, step=0.01,
+          description='Threshold:', style={'description_width': 'initial'})
+      decrease_button = widgets.Button(description='−', button_style='primary',
+                                       layout=widgets.Layout(width='40px'))
+      increase_button = widgets.Button(description='+', button_style='primary',
+                                       layout=widgets.Layout(width='40px'))
+      update_chart_button = widgets.Button(description='Update Chart', button_style='info',
+                                            layout=widgets.Layout(width='120px'))
 
 
-      # define functions to increase and decrease slider value
       def increase_slider_value(b):
-          threshold_importance_slider.value += 0.01
-
+        threshold_importance_slider.value = min(1.0, threshold_importance_slider.value + 0.01)
       def decrease_slider_value(b):
-          threshold_importance_slider.value -= 0.01
-
-      # link button widgets to functions
+        threshold_importance_slider.value = max(0.0, threshold_importance_slider.value - 0.01)
       increase_button.on_click(increase_slider_value)
       decrease_button.on_click(decrease_slider_value)
 
-
-      # create a button to confirm the threshold and re-generate the plot
-      threshold_importance_button = widgets.Button(description='Confirm Threshold',
-                          #layout=widgets.Layout(width='25%', height='30px')
-                          button_style='success')
-
-      # define action when click the button
-      def on_threshold_importance_button_click(b):
-        if fitter_dropdown.value =='choose a fitter':
-          print('Please choose a fitter.')
-          return
-        else:
-          threshold_importance = threshold_importance_slider.value
-
-          # clear the previous output
-          output_importance.clear_output()
-
-          with output_importance:
-            perm_importance_plot(importance, threshold = threshold_importance)
-
-      # attached the action to the button
-      threshold_importance_button.on_click(on_threshold_importance_button_click)
-
-      # create a horizontal box to hold the slider and buttons
-      threshold_slider_box = widgets.HBox([decrease_button,
-                                           threshold_importance_slider,
-                                           increase_button,
-                                           ],
-                                layout=widgets.Layout(justify_content='center', align_items='center'))
-
-      # create a button to remove the variables with low feature importance
-      feature_remove_button = widgets.Button(description='Remove Features',
-                          #layout=widgets.Layout(width='25%', height='30px')
-                          button_style = 'success')
-
-      feature_revert_button = widgets.Button(description='Revert',
-                                    icon='reply',
-                                    button_style='warning')
-
-      # status banner for Feature Importance remove/revert
+      # ── remove / revert controls ───────────────────────────────
+      feature_remove_button = widgets.Button(description='Remove Features', button_style='success')
+      feature_revert_button = widgets.Button(description='Revert', icon='reply', button_style='warning')
       importance_status_out = widgets.Output()
 
-      # Define a function to remove the variables with importance less than the threshold
-      def remove_variables(threshold):
-        df = self.data
-        if 'importance' not in globals() or importance is None:
-            raise RuntimeError('no_importance')
-        importance_score = importance.importances_mean
-        X = df.drop(target_variable, axis=1)
-        # Guard: feature count may differ if prior sections already removed features
-        if len(importance_score) != X.shape[1]:
-            raise RuntimeError('importance_stale')
-        cols_to_keep   = importance_score >= threshold
-        cols_to_remove = [c for c in X.columns[~cols_to_keep] if c in df.columns]
-        return df.drop(cols_to_remove, axis=1, errors='ignore')
+      # ── display layout (widgets first, chart area below) ───────
+      threshold_slider_box = widgets.HBox(
+          [decrease_button, threshold_importance_slider, increase_button],
+          layout=widgets.Layout(align_items='center'))
+      display(widgets.VBox([
+          widgets.HBox([fitter_dropdown, fitter_confirm_button]),
+          widgets.HBox([threshold_slider_box, update_chart_button]),
+          widgets.HBox([feature_remove_button, feature_revert_button]),
+      ]))
+      display(importance_status_out)
+      display(output_importance)
 
-      # Define a function to handle the button click event
-      def on_button_remove_clicked(b):
-        threshold = threshold_importance_slider.value
-        importance_status_out.clear_output(wait=True)
-        with importance_status_out:
-            if 'importance' not in globals() or importance is None:
-                display(HTML(
-                    '<div style="background:rgba(255,193,7,0.12);border:1px solid rgba(255,193,7,0.5);'
-                    'border-radius:6px;padding:10px 14px;margin:6px 0">'
-                    '⚠️ Please select a fitter and click <b>Confirm</b> first to compute feature importance.</div>'
-                ))
-                return
-            self.data_copy = self.data.copy()
-            old_cols = set(self.data.columns)
-            try:
-                self.data = remove_variables(threshold)
-            except RuntimeError as _e:
-                if 'stale' in str(_e):
-                    display(HTML(
-                        '<div style="background:rgba(255,193,7,0.12);border:1px solid rgba(255,193,7,0.5);'
-                        'border-radius:6px;padding:10px 14px;margin:6px 0">'
-                        '⚠️ Feature set changed since importance was last computed. '
-                        'Please re-select a fitter and click <b>Confirm</b> to recompute.</div>'
-                    ))
-                    return
-                raise
-            removed = sorted(old_cols - set(self.data.columns))
-            if removed:
-                items = ''.join(f'<li><code>{f}</code></li>' for f in removed)
-                display(HTML(
-                    f'<div style="background:rgba(52,168,83,0.12);border:1px solid rgba(52,168,83,0.5);'
-                    f'border-radius:6px;padding:10px 14px;margin:6px 0">'
-                    f'✅ <b>{len(removed)} feature(s) removed</b> (importance &lt; {threshold}):'
-                    f'<ul style="margin:4px 0 0 16px">{items}</ul>'
-                    f'<span style="font-size:12px;opacity:0.7">{self.data.shape[1]} features remaining.</span></div>'
-                ))
-            else:
-                display(HTML(
-                    f'<div style="background:rgba(255,193,7,0.12);border:1px solid rgba(255,193,7,0.5);'
-                    f'border-radius:6px;padding:10px 14px;margin:6px 0">'
-                    f'⚠️ No features below importance threshold {threshold} — dataset unchanged.</div>'
-                ))
+      # ── core compute + render ──────────────────────────────────
+      def _run_importance(fitter_name):
+        output_importance.clear_output(wait=True)
+        with output_importance:
+          display(HTML(
+              '<div style="background:rgba(128,128,128,0.08);border:1px solid rgba(128,128,128,0.3);'
+              'border-radius:6px;padding:10px 14px;margin:6px 0">'
+              f'⏳ Computing permutation importance with <b>{fitter_name}</b> …</div>'
+          ))
+        try:
+          fitter = _build_fitter(fitter_name)
+          imp_result, feat_names = perm_importance(self.data, fitter)
+          self._importance = imp_result
+          self._importance_features = feat_names
+          output_importance.clear_output(wait=True)
+          with output_importance:
+            perm_importance_plot(imp_result, feat_names,
+                                 threshold_importance_slider.value, fitter_name)
+        except Exception as _err:
+          output_importance.clear_output(wait=True)
+          with output_importance:
+            display(HTML(
+                f'<div style="background:rgba(220,53,69,0.12);border:1px solid rgba(220,53,69,0.5);'
+                f'border-radius:6px;padding:10px 14px;margin:6px 0">'
+                f'❌ Feature importance computation failed: {_err}</div>'
+            ))
 
-      def on_button_revert_clicked(b):
+      # ── button handlers ────────────────────────────────────────
+      def on_button_fitter_click(b):
+        _run_importance(fitter_dropdown.value)
+
+      def on_update_chart_click(b):
+        if not hasattr(self, '_importance') or self._importance is None:
           importance_status_out.clear_output(wait=True)
           with importance_status_out:
-              if hasattr(self, 'data_copy') and self.data_copy is not None:
-                  restored = sorted(set(self.data_copy.columns) - set(self.data.columns))
-                  self.data = self.data_copy.copy()
-                  if restored:
-                      items = ''.join(f'<li><code>{f}</code></li>' for f in restored)
-                      display(HTML(
-                          f'<div style="background:rgba(66,133,244,0.12);border:1px solid rgba(66,133,244,0.5);'
-                          f'border-radius:6px;padding:10px 14px;margin:6px 0">'
-                          f'↩️ <b>{len(restored)} feature(s) restored:</b>'
-                          f'<ul style="margin:4px 0 0 16px">{items}</ul>'
-                          f'<span style="font-size:12px;opacity:0.7">Dataset back to {self.data.shape[1]} features.</span></div>'
-                      ))
-                  else:
-                      display(HTML(
-                          '<div style="background:rgba(66,133,244,0.12);border:1px solid rgba(66,133,244,0.5);'
-                          'border-radius:6px;padding:10px 14px;margin:6px 0">'
-                          '↩️ Dataset reverted — all features restored.</div>'
-                      ))
-              else:
-                  display(HTML(
-                      '<div style="background:rgba(255,193,7,0.12);border:1px solid rgba(255,193,7,0.5);'
-                      'border-radius:6px;padding:10px 14px;margin:6px 0">'
-                      '⚠️ Nothing to revert — no features have been removed yet.</div>'
-                  ))
+            display(HTML(
+                '<div style="background:rgba(255,193,7,0.12);border:1px solid rgba(255,193,7,0.5);'
+                'border-radius:6px;padding:10px 14px;margin:6px 0">'
+                '⚠️ No importance data yet — waiting for computation to finish.</div>'
+            ))
+          return
+        output_importance.clear_output(wait=True)
+        with output_importance:
+          perm_importance_plot(self._importance, self._importance_features,
+                               threshold_importance_slider.value, fitter_dropdown.value)
 
-      # Attach the button click event to the button widgets
+      def on_button_remove_clicked(b):
+        importance_status_out.clear_output(wait=True)
+        with importance_status_out:
+          if not hasattr(self, '_importance') or self._importance is None:
+            display(HTML(
+                '<div style="background:rgba(255,193,7,0.12);border:1px solid rgba(255,193,7,0.5);'
+                'border-radius:6px;padding:10px 14px;margin:6px 0">'
+                '⚠️ Feature importance not yet computed — please wait for auto-run to finish.</div>'
+            ))
+            return
+          threshold = threshold_importance_slider.value
+          scores = self._importance.importances_mean
+          feat_names = self._importance_features
+          live_cols = set(self.data.columns)
+          below   = [f for f, s in zip(feat_names, scores) if s < threshold]
+          to_drop = [f for f in below if f in live_cols]
+          already = [f for f in below if f not in live_cols]
+          if to_drop:
+            self.data_copy = self.data.copy()
+            self.data = self.data.drop(columns=to_drop, errors='ignore')
+            items = ''.join(f'<li><code>{f}</code></li>' for f in sorted(to_drop))
+            display(HTML(
+                f'<div style="background:rgba(52,168,83,0.12);border:1px solid rgba(52,168,83,0.5);'
+                f'border-radius:6px;padding:10px 14px;margin:6px 0">'
+                f'✅ <b>{len(to_drop)} feature(s) removed</b> (importance &lt; {threshold:.2f}):'
+                f'<ul style="margin:4px 0 0 16px">{items}</ul>'
+                f'<span style="font-size:12px;opacity:0.7">{self.data.shape[1]} features remaining.</span></div>'
+            ))
+          if already:
+            items2 = ''.join(f'<li><code>{f}</code></li>' for f in sorted(already))
+            display(HTML(
+                f'<div style="background:rgba(66,133,244,0.12);border:1px solid rgba(66,133,244,0.5);'
+                f'border-radius:6px;padding:10px 14px;margin:6px 0">'
+                f'ℹ️ <b>{len(already)} feature(s)</b> below threshold but already removed in a prior step:'
+                f'<ul style="margin:4px 0 0 16px">{items2}</ul></div>'
+            ))
+          if not to_drop and not already:
+            display(HTML(
+                f'<div style="background:rgba(255,193,7,0.12);border:1px solid rgba(255,193,7,0.5);'
+                f'border-radius:6px;padding:10px 14px;margin:6px 0">'
+                f'⚠️ No features below importance threshold {threshold:.2f} — dataset unchanged.</div>'
+            ))
+
+      def on_button_revert_clicked(b):
+        importance_status_out.clear_output(wait=True)
+        with importance_status_out:
+          if hasattr(self, 'data_copy') and self.data_copy is not None:
+            restored = sorted(set(self.data_copy.columns) - set(self.data.columns))
+            self.data = self.data_copy.copy()
+            if restored:
+              items = ''.join(f'<li><code>{f}</code></li>' for f in restored)
+              display(HTML(
+                  f'<div style="background:rgba(66,133,244,0.12);border:1px solid rgba(66,133,244,0.5);'
+                  f'border-radius:6px;padding:10px 14px;margin:6px 0">'
+                  f'↩️ <b>{len(restored)} feature(s) restored:</b>'
+                  f'<ul style="margin:4px 0 0 16px">{items}</ul>'
+                  f'<span style="font-size:12px;opacity:0.7">Dataset back to {self.data.shape[1]} features.</span></div>'
+              ))
+            else:
+              display(HTML(
+                  '<div style="background:rgba(66,133,244,0.12);border:1px solid rgba(66,133,244,0.5);'
+                  'border-radius:6px;padding:10px 14px;margin:6px 0">'
+                  '↩️ Dataset reverted — all features restored.</div>'
+              ))
+          else:
+            display(HTML(
+                '<div style="background:rgba(255,193,7,0.12);border:1px solid rgba(255,193,7,0.5);'
+                'border-radius:6px;padding:10px 14px;margin:6px 0">'
+                '⚠️ Nothing to revert — no features have been removed yet.</div>'
+            ))
+
+      fitter_confirm_button.on_click(on_button_fitter_click)
+      update_chart_button.on_click(on_update_chart_click)
       feature_remove_button.on_click(on_button_remove_clicked)
       feature_revert_button.on_click(on_button_revert_clicked)
 
-      # create widget boxes
-      fitter_widget = widgets.HBox([fitter_dropdown, fitter_confirm_button])
-      threshold_widget = widgets.HBox([threshold_slider_box, threshold_importance_button])
-      feature_remove_widget = widgets.HBox([feature_remove_button, feature_revert_button])
-      # display widgets
-      display(widgets.VBox([fitter_widget,
-                          threshold_widget,
-                          feature_remove_widget]))
-      display(importance_status_out)
-      display(output_importance)
+      # ── auto-run with Random Forest on tab load ────────────────
+      _run_importance('random forest')
 
   def model_training(self):
     df = self.data
