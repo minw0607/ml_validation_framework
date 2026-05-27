@@ -196,13 +196,13 @@ class ValidationFramework:
                if meta['task'] == 'classification' else
                '<span style="background:#2196F3;color:white;padding:2px 8px;'
                'border-radius:4px;font-size:12px">Regression</span>')
-      return (f'<div style="border:1px solid #ddd;border-radius:6px;padding:12px;'
-              f'margin:8px 0;background:#fafafa">'
+      return (f'<div style="border:1px solid rgba(128,128,128,0.3);border-radius:6px;padding:12px;'
+              f'margin:8px 0;background:rgba(128,128,128,0.08)">'
               f'<b>Task:</b> {badge} &nbsp; '
               f'<b>Target:</b> <code>{meta["target"]}</code> &nbsp; '
               f'<b>Rows:</b> {rows_str} &nbsp; '
               f'<b>Features:</b> {feat_str}<br>'
-              f'<span style="color:#555;font-size:13px">{meta["desc"]}</span>'
+              f'<span style="font-size:13px;opacity:0.75">{meta["desc"]}</span>'
               f'</div>')
 
     def on_select(change):
@@ -573,7 +573,7 @@ class ValidationFramework:
     df = self.data
     if df.empty:
       display(HTML(
-        '<div style="padding:12px;background:#fff3cd;border:1px solid #ffc107;'
+        '<div style="padding:12px;background:rgba(255,193,7,0.15);border:1px solid rgba(255,193,7,0.6);'
         'border-radius:6px;margin:8px 0">'
         '⚠️ <b>No data loaded.</b> Please complete <b>Step 1 — Load Data</b> first.'
         '</div>'
