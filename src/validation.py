@@ -42,7 +42,10 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor, plot_tre
 from sklearn import tree
 from sklearn.metrics import (accuracy_score, roc_auc_score, f1_score,
                               mean_squared_error, mean_absolute_error, r2_score,
-                              precision_score, recall_score)
+                              precision_score, recall_score,
+                              confusion_matrix, roc_curve,
+                              precision_recall_curve, average_precision_score,
+                              log_loss, brier_score_loss, classification_report)
 from sklearn.neighbors import LocalOutlierFactor
 from sklearn.svm import OneClassSVM
 
@@ -2335,6 +2338,197 @@ class ValidationFramework:
               return metric_functions[metric](y_true, y_pred_labels)
       else:
           return metric_functions[metric](y_true, y_pred)  # regression metric
+
+################# Accuracy ###################
+
+    with accuracy_tab:
+        n_cls_acc = len(np.unique(y_test))
+
+        # ── shared helpers ────────────────────────────────────────────────────
+        def _mrow(name, val_str, note=''):
+            return (f'<tr>'
+                    f'<td style="padding:5px 14px;font-weight:bold">{name}</td>'
+                    f'<td style="padding:5px 14px">{val_str}</td>'
+                    f'<td style="padding:5px 14px;opacity:0.65;font-size:12px">{note}</td>'
+                    f'</tr>')
+
+        def _mtable(rows_html):
+            return (
+                '<table style="border-collapse:collapse;font-size:14px;margin-top:8px">'
+                '<thead><tr>'
+                '<th style="padding:5px 14px;border-bottom:2px solid rgba(128,128,128,0.3);text-align:left">Metric</th>'
+                '<th style="padding:5px 14px;border-bottom:2px solid rgba(128,128,128,0.3);text-align:left">Value</th>'
+                '<th style="padding:5px 14px;border-bottom:2px solid rgba(128,128,128,0.3);text-align:left">Notes</th>'
+                '</tr></thead>'
+                f'<tbody>{rows_html}</tbody>'
+                '</table>'
+            )
+
+        if task == 'classification':
+            y_proba    = model.predict_proba(X_test)
+            y_pred_cls = model.predict(X_test)
+
+            acc  = accuracy_score(y_test, y_pred_cls)
+            prec = precision_score(y_test, y_pred_cls, average='macro', zero_division=0)
+            rec  = recall_score(y_test,   y_pred_cls, average='macro', zero_division=0)
+            f1   = f1_score(y_test,       y_pred_cls, average='macro', zero_division=0)
+            try:
+                auc_roc = (roc_auc_score(y_test, y_proba[:, 1])
+                           if n_cls_acc == 2
+                           else roc_auc_score(y_test, y_proba, multi_class='ovr'))
+            except Exception:
+                auc_roc = float('nan')
+
+            if n_cls_acc == 2:   # ── Binary classification ──────────────────
+                y_proba_pos = y_proba[:, 1]
+                tn = int(np.sum((np.array(y_test) == 0) & (y_pred_cls == 0)))
+                fp = int(np.sum((np.array(y_test) == 0) & (y_pred_cls == 1)))
+                spec    = tn / (tn + fp) if (tn + fp) > 0 else float('nan')
+                ll      = log_loss(y_test, y_proba)
+                brier   = brier_score_loss(y_test, y_proba_pos)
+                fpr_a, tpr_a, _ = roc_curve(y_test, y_proba_pos)
+                ks_stat = float(np.max(tpr_a - fpr_a))
+                gini    = 2 * auc_roc - 1
+                auc_pr  = average_precision_score(y_test, y_proba_pos)
+                prec_a, rec_a, _ = precision_recall_curve(y_test, y_proba_pos)
+
+                rows = ''.join([
+                    _mrow('Accuracy',     f'{acc:.4f}',    '(TP+TN) / Total'),
+                    _mrow('Precision',    f'{prec:.4f}',   'TP / (TP+FP)'),
+                    _mrow('Recall',       f'{rec:.4f}',    'TP / (TP+FN)  — Sensitivity'),
+                    _mrow('Specificity',  f'{spec:.4f}',   'TN / (TN+FP)'),
+                    _mrow('F1 Score',     f'{f1:.4f}',     'Harmonic mean of Precision & Recall'),
+                    _mrow('AUC-ROC',      f'{auc_roc:.4f}','Discrimination ability (1.0 = perfect)'),
+                    _mrow('AUC-PR',       f'{auc_pr:.4f}', 'Better than AUC-ROC for imbalanced data'),
+                    _mrow('KS Statistic', f'{ks_stat:.4f}','Max score-distribution separation — key risk metric'),
+                    _mrow('Gini',         f'{gini:.4f}',   '2 × AUC − 1  (risk / scorecard standard)'),
+                    _mrow('Log Loss',     f'{ll:.4f}',     'Penalises confident errors (lower = better)'),
+                    _mrow('Brier Score',  f'{brier:.4f}',  'Calibration quality (lower = better)'),
+                ])
+                display(HTML(_mtable(rows)))
+
+                fig, axes = plt.subplots(1, 3, figsize=(16, 4))
+
+                # Confusion Matrix
+                cm_vals = confusion_matrix(y_test, y_pred_cls)
+                sns.heatmap(cm_vals, annot=True, fmt='d', cmap='Blues',
+                            ax=axes[0], cbar=False)
+                axes[0].set_title('Confusion Matrix')
+                axes[0].set_xlabel('Predicted Label')
+                axes[0].set_ylabel('True Label')
+
+                # ROC Curve
+                axes[1].plot(fpr_a, tpr_a, lw=2, label=f'AUC = {auc_roc:.3f}')
+                axes[1].plot([0, 1], [0, 1], 'k--', lw=1, label='Random')
+                axes[1].set_xlabel('False Positive Rate')
+                axes[1].set_ylabel('True Positive Rate')
+                axes[1].set_title('ROC Curve')
+                axes[1].legend(loc='lower right')
+
+                # Precision-Recall Curve
+                baseline = float(np.array(y_test).mean())
+                axes[2].plot(rec_a, prec_a, lw=2, label=f'AUC-PR = {auc_pr:.3f}')
+                axes[2].axhline(baseline, color='k', linestyle='--', lw=1,
+                                label=f'Baseline = {baseline:.3f}')
+                axes[2].set_xlabel('Recall')
+                axes[2].set_ylabel('Precision')
+                axes[2].set_title('Precision-Recall Curve')
+                axes[2].legend(loc='upper right')
+
+                plt.tight_layout()
+                plt.show()
+
+            else:   # ── Multi-class classification ──────────────────────────
+                rows = ''.join([
+                    _mrow('Accuracy',  f'{acc:.4f}',    'Overall'),
+                    _mrow('Precision', f'{prec:.4f}',   'Macro-averaged'),
+                    _mrow('Recall',    f'{rec:.4f}',    'Macro-averaged'),
+                    _mrow('F1 Score',  f'{f1:.4f}',     'Macro-averaged'),
+                    _mrow('AUC-ROC',   f'{auc_roc:.4f}','One-vs-Rest, macro'),
+                ])
+                display(HTML(_mtable(rows)))
+
+                # Per-class report
+                report   = classification_report(y_test, y_pred_cls, output_dict=True)
+                cls_keys = [k for k in report if k not in ('accuracy', 'macro avg', 'weighted avg')]
+                rep_rows = ''
+                for cls in cls_keys:
+                    p = report[cls]['precision']
+                    r = report[cls]['recall']
+                    f = report[cls]['f1-score']
+                    s = int(report[cls]['support'])
+                    rep_rows += (
+                        f'<tr style="border-bottom:1px solid rgba(128,128,128,0.15)">'
+                        f'<td style="padding:4px 10px">{cls}</td>'
+                        f'<td style="padding:4px 10px">{p:.3f}</td>'
+                        f'<td style="padding:4px 10px">{r:.3f}</td>'
+                        f'<td style="padding:4px 10px">{f:.3f}</td>'
+                        f'<td style="padding:4px 10px">{s}</td></tr>'
+                    )
+                display(HTML(
+                    '<br><b>Per-class Report</b>'
+                    '<table style="border-collapse:collapse;font-size:13px;margin-top:6px">'
+                    '<thead><tr style="border-bottom:2px solid rgba(128,128,128,0.3)">'
+                    '<th style="padding:5px 10px;text-align:left">Class</th>'
+                    '<th style="padding:5px 10px">Precision</th>'
+                    '<th style="padding:5px 10px">Recall</th>'
+                    '<th style="padding:5px 10px">F1</th>'
+                    '<th style="padding:5px 10px">Support</th>'
+                    f'</tr></thead><tbody>{rep_rows}</tbody></table>'
+                ))
+
+                fig, ax = plt.subplots(figsize=(6, 5))
+                cm_vals = confusion_matrix(y_test, y_pred_cls)
+                sns.heatmap(cm_vals, annot=True, fmt='d', cmap='Blues', ax=ax, cbar=False)
+                ax.set_title('Confusion Matrix')
+                ax.set_xlabel('Predicted Label')
+                ax.set_ylabel('True Label')
+                plt.tight_layout()
+                plt.show()
+
+        elif task == 'regression':
+            y_pred_reg = model.predict(X_test)
+            y_t        = np.array(y_test)
+            residuals  = y_t - y_pred_reg
+
+            mae    = mean_absolute_error(y_test, y_pred_reg)
+            mse    = mean_squared_error(y_test, y_pred_reg)
+            rmse   = float(np.sqrt(mse))
+            r2     = r2_score(y_test, y_pred_reg)
+            n, p   = len(y_test), X_test.shape[1]
+            adj_r2 = 1 - (1 - r2) * (n - 1) / max(n - p - 1, 1)
+            mask   = y_t != 0
+            mape   = (float(np.mean(np.abs(residuals[mask] / y_t[mask]))) * 100
+                      if mask.any() else float('nan'))
+
+            rows = ''.join([
+                _mrow('MAE',         f'{mae:.4f}',   'Mean Absolute Error (same units as target)'),
+                _mrow('MSE',         f'{mse:.4f}',   'Mean Squared Error'),
+                _mrow('RMSE',        f'{rmse:.4f}',  'Root MSE (same units as target)'),
+                _mrow('R²',          f'{r2:.4f}',    '% variance explained by the model'),
+                _mrow('Adjusted R²', f'{adj_r2:.4f}','R² penalised for number of features'),
+                _mrow('MAPE',        f'{mape:.2f}%', '% error  (zero-target rows excluded)'),
+            ])
+            display(HTML(_mtable(rows)))
+
+            fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+            mn, mx = min(y_t.min(), y_pred_reg.min()), max(y_t.max(), y_pred_reg.max())
+
+            axes[0].scatter(y_t, y_pred_reg, alpha=0.4, s=20)
+            axes[0].plot([mn, mx], [mn, mx], 'r--', lw=1.5, label='Perfect fit')
+            axes[0].set_xlabel('Actual')
+            axes[0].set_ylabel('Predicted')
+            axes[0].set_title(f'Actual vs Predicted  (R² = {r2:.3f})')
+            axes[0].legend()
+
+            axes[1].scatter(y_pred_reg, residuals, alpha=0.4, s=20)
+            axes[1].axhline(0, color='r', linestyle='--', lw=1.5)
+            axes[1].set_xlabel('Predicted')
+            axes[1].set_ylabel('Residual  (Actual − Predicted)')
+            axes[1].set_title('Residuals vs Predicted')
+
+            plt.tight_layout()
+            plt.show()
 
 ################# Resiliency #####################
 
