@@ -1225,12 +1225,16 @@ class ValidationFramework:
 
       # Define a function to handle the button click event
       def on_button_fitter_click(b):
-        #global fitter
-        if fitter_dropdown.value == 'choose a fitter':
-          print('Please choose a fitter.')
+        if fitter_dropdown.value == 'select a fitter':
+          with output_importance:
+            display(HTML(
+                '<div style="background:rgba(255,193,7,0.12);border:1px solid rgba(255,193,7,0.5);'
+                'border-radius:6px;padding:10px 14px;margin:6px 0">'
+                '⚠️ Please select a fitter from the dropdown first.</div>'
+            ))
           return
-        elif fitter_dropdown.value == 'logistic regresssion':
-          fitter = LogisticRegression()
+        elif fitter_dropdown.value == 'logistic regression':
+          fitter = LogisticRegression(max_iter=1000)
         elif fitter_dropdown.value == 'random forest':
           fitter = RandomForestRegressor(n_estimators=100, max_samples = 0.2,
                                         random_state=42)
@@ -1340,11 +1344,6 @@ class ValidationFramework:
                                     icon='reply',
                                     button_style='warning')
 
-      # create the output widgets
-      output_remove = widgets.Output()
-      output_revert = widgets.Output()
-      # create a dictionary to map buttons to their corresponding output widgets
-      output_dict = {button_remove: output_remove, button_revert: output_revert}
       # status banner for Feature Importance remove/revert
       importance_status_out = widgets.Output()
 
