@@ -1188,7 +1188,7 @@ class ValidationFramework:
 
       # ── task-aware model builder ───────────────────────────────
       def _build_fitter(name):
-        is_clf = self.task in ('binary_classification', 'multiclass_classification')
+        is_clf = self.task == 'classification'
         if name == 'random forest':
           return (RandomForestClassifier(n_estimators=100, max_samples=0.2, random_state=42)
                   if is_clf else
@@ -1240,10 +1240,11 @@ class ValidationFramework:
         ax.set_title(f'Permutation Importance — {fitter_name}')
         ax.set_xlabel('Mean Importance Score')
         plt.tight_layout()
-        plt.show()
+        display(fig)   # use display(fig) — more reliable inside Output widgets than plt.show()
+        plt.close(fig)
 
       # ── fitter selector (optional re-run) ─────────────────────
-      is_clf = self.task in ('binary_classification', 'multiclass_classification')
+      is_clf = self.task == 'classification'
       fitter_opts = ['random forest', 'gradient boosting machine']
       if is_clf:
         fitter_opts.append('logistic regression')
@@ -1412,8 +1413,10 @@ class ValidationFramework:
       feature_remove_button.on_click(on_button_remove_clicked)
       feature_revert_button.on_click(on_button_revert_clicked)
 
-      # ── auto-run with Random Forest on tab load ────────────────
-      _run_importance('random forest')
+    # ── auto-run OUTSIDE the with-block to avoid double-nested Output context ──
+    # (calling plt/display inside two nested Output contexts can silently drop output
+    #  in some Colab environments; running outside ensures a single context level)
+    _run_importance('random forest')
 
   def model_training(self):
     df = self.data
