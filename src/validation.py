@@ -2058,36 +2058,44 @@ class ValidationFramework:
       #shap_values = explainer(X_test)
 
       # Plot the SHAP values for the selected instance in the test set
-      fig, ax = plt.subplots(figsize=(3,2))
-
       try:
-        sv = shap_values
-        ev = explainer.expected_value
+        # ── extract plain numpy arrays from SHAP Explanation object ──────────
+        # Always use .values (numpy array) for indexing — Explanation objects
+        # don't reliably support multi-dimensional tuple indexing like [i, :, c].
+        sv_vals = shap_values.values       # (n_test, n_features) or (n_test, n_features, n_classes)
+        sv_base = shap_values.base_values  # (n_test,) or (n_test, n_classes)
+        sv_data = shap_values.data         # (n_test, n_features)
 
-        # 3-D array → multi-class (n_samples, n_features, n_classes)
-        if hasattr(sv, 'ndim') and sv.ndim == 3:
-            predicted_class = int(model.predict(
-                X_test.iloc[instance_index].values.reshape(1, -1))[0])
-            sv_inst = sv[instance_index, :, predicted_class]
-            # expected_value may be scalar or per-class array
-            if np.isscalar(ev) or (hasattr(ev, '__len__') and len(ev) == 1):
-                ev_inst = float(ev) if np.isscalar(ev) else float(ev[0])
-            else:
-                ev_inst = float(ev[predicted_class])
+        # ── pick slice for this instance ──────────────────────────────────────
+        if sv_vals.ndim == 3:
+          # shape (n_test, n_features, n_classes) — binary / multi-class
+          predicted_class = int(model.predict(
+              X_test.iloc[[instance_index]])[0])
+          inst_vals = sv_vals[instance_index, :, predicted_class]   # (n_features,)
+          bv = sv_base[instance_index]
+          inst_base = float(bv[predicted_class]) if hasattr(bv, '__len__') else float(bv)
         else:
-            # 2-D binary / regression — use values directly
-            sv_inst = sv[instance_index]
-            ev_inst = float(ev) if np.isscalar(ev) else float(ev[0] if hasattr(ev, '__len__') else ev)
+          # shape (n_test, n_features) — regression or single-output binary
+          inst_vals = sv_vals[instance_index]                        # (n_features,)
+          bv = sv_base[instance_index] if hasattr(sv_base, '__len__') else sv_base
+          inst_base = float(bv)
 
-        explanation = shap.Explanation(values=sv_inst,
-                                       base_values=ev_inst,
-                                       data=X_test.iloc[instance_index])
+        inst_data = sv_data[instance_index] if sv_data is not None else X_test.iloc[instance_index].values
+
+        explanation = shap.Explanation(
+            values=inst_vals,
+            base_values=inst_base,
+            data=inst_data,
+            feature_names=list(X_test.columns)
+        )
+        # waterfall creates its own figure — do NOT pre-create fig/ax
         shap.plots.waterfall(explanation, show=False)
-        ax.set_title("Shapley Values for Instance " + str(instance_index))
+        plt.title(f'SHAP Waterfall — Instance {instance_index}', pad=4)
+        plt.tight_layout()
         plt.show()
 
       except Exception as _shap_err:
-        plt.close()
+        plt.close('all')
         display(HTML(
             f'<div style="background:rgba(255,193,7,0.12);border:1px solid rgba(255,193,7,0.5);'
             f'border-radius:6px;padding:10px 14px;margin:6px 0">'
