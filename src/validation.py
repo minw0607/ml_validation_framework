@@ -1177,22 +1177,45 @@ class ValidationFramework:
       display(sp_action_out)
 
 ######################### TAB #################################
-    # Feature Importance — renders chart as PNG Image bytes to avoid Colab
-    # matplotlib/Output-widget double-context rendering issue.
-    # display(IPython.Image(png_bytes)) always works; plt.show()/display(fig) may not.
+    # Feature Importance — uses clear-and-rebuild pattern (same as Pearson/Spearman)
+    # + print() debug to Colab stdout (always visible regardless of widget context).
+    import io as _io, traceback as _tb, base64 as _b64
+
+    # ── STEP 0: visible debug banner in cell output ──────────────
+    display(HTML(
+        '<div style="background:#fff3cd;border:2px solid #fd7e14;padding:10px;'
+        'border-radius:6px;font-size:14px;margin:4px 0">'
+        '🔶 <b>[FI DEBUG 0]</b> Feature Importance section reached</div>'
+    ))
+    print('[FI] Starting Feature Importance setup…')
+
     importance_tab.clear_output()
     with importance_tab:
-      import io as _io
-      from IPython.display import Image as _IPyImage
-      import traceback as _tb
+      display(HTML(
+          '<div style="background:#d4edda;border:2px solid #28a745;padding:12px;'
+          'border-radius:6px;font-size:15px">'
+          '✅ <b>[FI DEBUG 0]</b> importance_tab IS rendering — setup starting…</div>'
+      ))
 
+    try:
       target_variable = self.target
       test_ratio      = self.test_ratio
       random_state    = self.random
 
-      # chart output lives in a sub-widget; HTML-only content always renders there fine
-      output_importance   = widgets.Output()
-      importance_status_out = widgets.Output()
+      # ── STEP 1: confirm we entered the try block ──────────────
+      display(HTML(
+          '<div style="background:#cce5ff;border:1px solid #004085;padding:6px;'
+          'border-radius:4px;font-size:13px;margin:2px 0">'
+          '🔷 <b>[FI DEBUG 1]</b> try-block entered, target=<code>'
+          f'{target_variable}</code>, task=<code>{self.task}</code></div>'
+      ))
+      importance_tab.clear_output()
+      with importance_tab:
+        display(HTML(
+            '<div style="background:#cce5ff;border:1px solid #004085;padding:10px;'
+            'border-radius:6px;font-size:14px">'
+            '🔷 <b>[FI DEBUG 1]</b> try-block OK — creating widgets…</div>'
+        ))
 
       # ── task-aware model factory ───────────────────────────────
       def _get_fitter(name):
@@ -1211,8 +1234,88 @@ class ValidationFramework:
           return LogisticRegression(max_iter=1000)
         raise ValueError(f'Unknown fitter: {name}')
 
-      # ── chart to PNG bytes → IPython Image (bypasses matplotlib hooks) ────
+      # ── widget controls ────────────────────────────────────────
+      is_clf      = self.task == 'classification'
+      fitter_opts = ['random forest', 'gradient boosting machine']
+      if is_clf:
+        fitter_opts.append('logistic regression')
+
+      fitter_dropdown = widgets.Dropdown(
+          options=fitter_opts, value='random forest',
+          description='Model:', style={'description_width': 'initial'})
+      fitter_confirm_button = widgets.Button(
+          description='Re-run', button_style='primary',
+          layout=widgets.Layout(width='100px'))
+      threshold_importance_slider = widgets.FloatSlider(
+          value=0.1, min=0, max=1, step=0.01,
+          description='Threshold:', style={'description_width': 'initial'})
+      decrease_button = widgets.Button(description='−', button_style='primary',
+                                       layout=widgets.Layout(width='40px'))
+      increase_button = widgets.Button(description='+', button_style='primary',
+                                       layout=widgets.Layout(width='40px'))
+      update_chart_button = widgets.Button(
+          description='Update Chart', button_style='info',
+          layout=widgets.Layout(width='120px'))
+      feature_remove_button = widgets.Button(
+          description='Remove Features', button_style='success')
+      feature_revert_button = widgets.Button(
+          description='Revert', icon='reply', button_style='warning')
+
+      importance_status_out = widgets.Output()
+
+      def increase_slider_value(b):
+        threshold_importance_slider.value = min(1.0, threshold_importance_slider.value + 0.01)
+      def decrease_slider_value(b):
+        threshold_importance_slider.value = max(0.0, threshold_importance_slider.value - 0.01)
+      increase_button.on_click(increase_slider_value)
+      decrease_button.on_click(decrease_slider_value)
+
+      threshold_slider_box = widgets.HBox(
+          [decrease_button, threshold_importance_slider, increase_button],
+          layout=widgets.Layout(align_items='center'))
+      controls_top = widgets.VBox([
+          widgets.HBox([fitter_dropdown, fitter_confirm_button]),
+          widgets.HBox([threshold_slider_box, update_chart_button]),
+          widgets.HBox([feature_remove_button, feature_revert_button]),
+      ])
+      print('[FI] Widgets created OK')
+
+      # ── STEP 2: widgets created ───────────────────────────────
+      display(HTML(
+          '<div style="background:#d1ecf1;border:1px solid #0c5460;padding:6px;'
+          'border-radius:4px;font-size:13px;margin:2px 0">'
+          '🔹 <b>[FI DEBUG 2]</b> Widgets created OK</div>'
+      ))
+      importance_tab.clear_output()
+      with importance_tab:
+        display(HTML(
+            '<div style="background:#d1ecf1;border:1px solid #0c5460;padding:10px;'
+            'border-radius:6px;font-size:14px">'
+            '🔹 <b>[FI DEBUG 2]</b> Widgets OK — defining helpers…</div>'
+        ))
+
+      # ── tab rebuild helper (clear-and-rebuild — proven pattern) ──
+      # status_html / chart_html are plain HTML strings embedded directly;
+      # no widget trait update or nested Output context needed.
+      def _show_in_tab(status_html='', chart_html=''):
+        print(f'[FI] _show_in_tab: status={bool(status_html)}, chart={bool(chart_html)}')
+        importance_tab.clear_output()
+        with importance_tab:
+          display(HTML(
+              f'<div style="background:#f8f9fa;border:1px solid #adb5bd;padding:4px;'
+              f'font-size:11px;color:#555">🔍 _show_in_tab called — '
+              f'status={bool(status_html)}, chart={bool(chart_html)}</div>'
+          ))
+          display(controls_top)
+          if status_html:
+            display(HTML(status_html))
+          if chart_html:
+            display(HTML(chart_html))
+          display(importance_status_out)
+
+      # ── chart render ───────────────────────────────────────────
       def _render_chart(imp_result, feat_names, threshold, fitter_name):
+        print(f'[FI] _render_chart: {fitter_name}, {len(feat_names)} features')
         scores     = imp_result.importances_mean
         sorted_idx = scores.argsort()
         n          = len(feat_names)
@@ -1227,25 +1330,27 @@ class ValidationFramework:
         ax.legend(fontsize=9)
         ax.set_title(f'Permutation Importance — {fitter_name}')
         ax.set_xlabel('Mean Importance Score')
-        plt.tight_layout()
+        fig.tight_layout()
         buf = _io.BytesIO()
         fig.savefig(buf, format='png', dpi=100, bbox_inches='tight')
         plt.close(fig)
-        buf.seek(0)
-        # display as raw PNG Image — never swallowed by Colab's inline backend
-        output_importance.clear_output(wait=True)
-        with output_importance:
-          display(_IPyImage(data=buf.read()))
+        b64 = _b64.b64encode(buf.getvalue()).decode()
+        print(f'[FI] PNG generated, b64 len={len(b64)}')
+        _show_in_tab(chart_html=(
+            f'<img src="data:image/png;base64,{b64}" '
+            f'style="max-width:100%;display:block;margin-top:8px;"/>'
+        ))
+        print('[FI] _show_in_tab done')
 
-      # ── core: compute importance + render chart ────────────────
+      # ── core compute ───────────────────────────────────────────
       def _run_importance(fitter_name):
-        output_importance.clear_output(wait=True)
-        with output_importance:
-          display(HTML(
-              '<div style="background:rgba(128,128,128,0.08);border:1px solid rgba(128,128,128,0.3);'
-              'border-radius:6px;padding:10px 14px;margin:6px 0">'
-              f'⏳ Computing permutation importance with <b>{fitter_name}</b> …</div>'
-          ))
+        print(f'[FI] _run_importance called: {fitter_name}')
+        _show_in_tab(status_html=(
+            '<div style="background:rgba(128,128,128,0.08);border:1px solid rgba(128,128,128,0.3);'
+            'border-radius:6px;padding:10px 14px;margin:6px 0">'
+            f'⏳ Computing permutation importance with <b>{fitter_name}</b> …</div>'
+        ))
+        print('[FI] _show_in_tab(Computing) done — starting computation')
         try:
           df_imp   = self.data.dropna()
           num_vars = df_imp.select_dtypes(include=['float64', 'int64']).columns
@@ -1264,70 +1369,24 @@ class ValidationFramework:
               X_tv, y_tv, test_size=0.25, random_state=42)
           fitter = _get_fitter(fitter_name)
           fitter.fit(X_tr, y_tr)
+          print('[FI] running permutation_importance…')
           result = permutation_importance(
               fitter, X_vl, y_vl, n_repeats=5, n_jobs=1, random_state=42)
           self._importance          = result
           self._importance_features = list(X_imp.columns)
+          print('[FI] permutation_importance done')
           _render_chart(result, list(X_imp.columns),
                         threshold_importance_slider.value, fitter_name)
         except Exception:
-          output_importance.clear_output(wait=True)
-          with output_importance:
-            display(HTML(
-                f'<div style="background:rgba(220,53,69,0.12);border:1px solid rgba(220,53,69,0.5);'
-                f'border-radius:6px;padding:10px 14px;margin:6px 0">'
-                f'<b>❌ Feature importance computation failed:</b>'
-                f'<pre style="margin:6px 0;font-size:11px;white-space:pre-wrap">'
-                f'{_tb.format_exc()}</pre></div>'
-            ))
-
-      # ── widget controls ────────────────────────────────────────
-      is_clf      = self.task == 'classification'
-      fitter_opts = ['random forest', 'gradient boosting machine']
-      if is_clf:
-        fitter_opts.append('logistic regression')
-
-      fitter_dropdown = widgets.Dropdown(
-          options=fitter_opts, value='random forest',
-          description='Model:', style={'description_width': 'initial'})
-      fitter_confirm_button = widgets.Button(
-          description='Re-run', button_style='primary',
-          layout=widgets.Layout(width='100px'))
-
-      threshold_importance_slider = widgets.FloatSlider(
-          value=0.1, min=0, max=1, step=0.01,
-          description='Threshold:', style={'description_width': 'initial'})
-      decrease_button = widgets.Button(description='−', button_style='primary',
-                                       layout=widgets.Layout(width='40px'))
-      increase_button = widgets.Button(description='+', button_style='primary',
-                                       layout=widgets.Layout(width='40px'))
-      update_chart_button = widgets.Button(
-          description='Update Chart', button_style='info',
-          layout=widgets.Layout(width='120px'))
-
-      feature_remove_button = widgets.Button(
-          description='Remove Features', button_style='success')
-      feature_revert_button = widgets.Button(
-          description='Revert', icon='reply', button_style='warning')
-
-      def increase_slider_value(b):
-        threshold_importance_slider.value = min(1.0, threshold_importance_slider.value + 0.01)
-      def decrease_slider_value(b):
-        threshold_importance_slider.value = max(0.0, threshold_importance_slider.value - 0.01)
-      increase_button.on_click(increase_slider_value)
-      decrease_button.on_click(decrease_slider_value)
-
-      # ── layout ─────────────────────────────────────────────────
-      threshold_slider_box = widgets.HBox(
-          [decrease_button, threshold_importance_slider, increase_button],
-          layout=widgets.Layout(align_items='center'))
-      display(widgets.VBox([
-          widgets.HBox([fitter_dropdown, fitter_confirm_button]),
-          widgets.HBox([threshold_slider_box, update_chart_button]),
-          widgets.HBox([feature_remove_button, feature_revert_button]),
-      ]))
-      display(importance_status_out)
-      display(output_importance)
+          tb_str = _tb.format_exc()
+          print(f'[FI] EXCEPTION in _run_importance:\n{tb_str}')
+          _show_in_tab(status_html=(
+              f'<div style="background:rgba(220,53,69,0.12);border:1px solid rgba(220,53,69,0.5);'
+              f'border-radius:6px;padding:10px 14px;margin:6px 0">'
+              f'<b>❌ Feature importance computation failed:</b>'
+              f'<pre style="margin:6px 0;font-size:11px;white-space:pre-wrap">'
+              f'{tb_str}</pre></div>'
+          ))
 
       # ── button handlers ────────────────────────────────────────
       def on_button_fitter_click(b):
@@ -1422,8 +1481,31 @@ class ValidationFramework:
       feature_remove_button.on_click(on_button_remove_clicked)
       feature_revert_button.on_click(on_button_revert_clicked)
 
-      # ── auto-run with Random Forest on tab load ────────────────
+      # ── STEP 3: about to auto-run ─────────────────────────────
+      display(HTML(
+          '<div style="background:#e2d9f3;border:1px solid #6f42c1;padding:6px;'
+          'border-radius:4px;font-size:13px;margin:2px 0">'
+          '🔸 <b>[FI DEBUG 3]</b> Handlers registered — calling auto-run now…</div>'
+      ))
+      print('[FI] Handlers registered. Auto-running…')
       _run_importance('random forest')
+      print('[FI] Auto-run complete.')
+      display(HTML(
+          '<div style="background:#d4edda;border:1px solid #28a745;padding:6px;'
+          'border-radius:4px;font-size:13px;margin:2px 0">'
+          '✅ <b>[FI DEBUG 4]</b> Auto-run returned without exception</div>'
+      ))
+
+    except Exception as _fi_err:
+      _tb_str = _tb.format_exc() if '_tb' in dir() else repr(_fi_err)
+      print(f'[FI] SETUP/AUTORUN FAILED:\n{_tb_str}')
+      importance_tab.clear_output()
+      with importance_tab:
+        display(HTML(
+            f'<div style="background:rgba(220,53,69,0.1);padding:12px;border-radius:6px">'
+            f'<b>❌ Feature Importance setup error:</b>'
+            f'<pre style="font-size:11px;white-space:pre-wrap">{_tb_str}</pre></div>'
+        ))
 
   def model_training(self):
     df = self.data
@@ -2163,18 +2245,24 @@ class ValidationFramework:
     # Function to plot PDP for selected single feature
     def plot_single_feature_pdp(feature_name):
         feature_idx = list(feature_names).index(feature_name)
-        _ = PartialDependenceDisplay.from_estimator(
-            model, X_test, features=[feature_idx], feature_names=feature_names)
-        plt.title("PDP for {}".format(feature_name))
+        fig, ax = plt.subplots(figsize=(6, 5))
+        PartialDependenceDisplay.from_estimator(
+            model, X_test, features=[feature_idx],
+            feature_names=feature_names, ax=ax)
+        ax.set_title("PDP for {}".format(feature_name))
+        plt.tight_layout()
         plt.show()
 
     # Function to plot PDP for selected pair of features
     def plot_pair_features_pdp(feature_name1, feature_name2):
         feature_idx1 = list(feature_names).index(feature_name1)
         feature_idx2 = list(feature_names).index(feature_name2)
-        _ = PartialDependenceDisplay.from_estimator(
-            model, X_test, features=[[feature_idx1, feature_idx2]], feature_names=feature_names)
-        plt.title("Two-Way PDP: {} vs {}".format(feature_name1, feature_name2))
+        fig, ax = plt.subplots(figsize=(6, 5))
+        PartialDependenceDisplay.from_estimator(
+            model, X_test, features=[[feature_idx1, feature_idx2]],
+            feature_names=feature_names, ax=ax)
+        ax.set_title("Two-Way PDP: {} vs {}".format(feature_name1, feature_name2))
+        plt.tight_layout()
         plt.show()
 
     # Create dropdown menu for single feature selection
@@ -2201,22 +2289,24 @@ class ValidationFramework:
     single_feature_plot = widgets.interactive(plot_single_feature_pdp, feature_name=single_feature_dropdown)
     pair_feature_plot = widgets.interactive(plot_pair_features_pdp, feature_name1=pair_feature_dropdown1, feature_name2=pair_feature_dropdown2)
 
+    # Fix equal widths and top-alignment for side-by-side layout
+    half_width_layout = widgets.Layout(width='50%', align_items='flex-start')
+    single_feature_plot.layout = widgets.Layout(width='100%')
+    pair_feature_plot.layout   = widgets.Layout(width='100%')
+
     with pdp_tab:
-      message1 = widgets.HTML(f"<h3>One-Way PDP</h3>")
-      message2 = widgets.HTML(f"<h3>Two-Way PDP")
-      output1 = widgets.VBox([message1, single_feature_plot])
-      output2 = widgets.VBox([message2, pair_feature_plot])
-      # Display the two plots side by side
-      #widgets.HBox([single_feature_plot, pair_feature_plot])
+      message1 = widgets.HTML("<h3>One-Way PDP</h3>")
+      message2 = widgets.HTML("<h3>Two-Way PDP</h3>")
+      output1 = widgets.VBox([message1, single_feature_plot],
+                             layout=half_width_layout)
+      output2 = widgets.VBox([message2, pair_feature_plot],
+                             layout=half_width_layout)
 
-      output_pdp = widgets.Output()
-
-      with output_pdp:
-        output_pdp.clear_output()
-
-        display(widgets.HBox([output1, output2]))
-
-      display(output_pdp)
+      hbox = widgets.HBox(
+          [output1, output2],
+          layout=widgets.Layout(width='100%', align_items='flex-start')
+      )
+      display(hbox)
 
 
 
