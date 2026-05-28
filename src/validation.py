@@ -1177,85 +1177,123 @@ class ValidationFramework:
       display(sp_action_out)
 
 ######################### TAB #################################
-    # display permutation based feature importance (auto-run with Random Forest)
+    # Feature Importance — renders chart as PNG Image bytes to avoid Colab
+    # matplotlib/Output-widget double-context rendering issue.
+    # display(IPython.Image(png_bytes)) always works; plt.show()/display(fig) may not.
     importance_tab.clear_output()
     with importance_tab:
+      import io as _io
+      from IPython.display import Image as _IPyImage
+      import traceback as _tb
+
       target_variable = self.target
-      test_ratio = self.test_ratio
-      random_state = self.random
+      test_ratio      = self.test_ratio
+      random_state    = self.random
 
-      output_importance = widgets.Output()
+      # chart output lives in a sub-widget; HTML-only content always renders there fine
+      output_importance   = widgets.Output()
+      importance_status_out = widgets.Output()
 
-      # ── task-aware model builder ───────────────────────────────
-      def _build_fitter(name):
+      # ── task-aware model factory ───────────────────────────────
+      def _get_fitter(name):
         is_clf = self.task == 'classification'
         if name == 'random forest':
-          return (RandomForestClassifier(n_estimators=100, max_samples=0.2, random_state=42)
+          return (RandomForestClassifier(n_estimators=100, random_state=42)
                   if is_clf else
-                  RandomForestRegressor(n_estimators=100, max_samples=0.2, random_state=42))
+                  RandomForestRegressor(n_estimators=100, random_state=42))
         elif name == 'gradient boosting machine':
           return (GradientBoostingClassifier(n_estimators=100, learning_rate=0.1,
-                                             max_depth=7, random_state=42)
+                                             max_depth=5, random_state=42)
                   if is_clf else
                   GradientBoostingRegressor(n_estimators=100, learning_rate=0.1,
-                                            max_depth=7, random_state=42))
+                                            max_depth=5, random_state=42))
         elif name == 'logistic regression':
           return LogisticRegression(max_iter=1000)
-        else:
-          raise ValueError(f'Unknown fitter: {name}')
+        raise ValueError(f'Unknown fitter: {name}')
 
-      # ── compute permutation importance ─────────────────────────
-      def perm_importance(df, fitter):
-        df = df.dropna()
-        num_vars = df.select_dtypes(include=['float64', 'int64']).columns
-        cat_vars = df.select_dtypes(include=['object', 'category', 'bool']).columns
-        if num_vars.empty or cat_vars.empty:
-          df_encoded = df
-        else:
-          le = LabelEncoder()
-          df_cat_encoded = df[cat_vars].apply(le.fit_transform)
-          df_encoded = pd.concat([df[num_vars], df_cat_encoded], axis=1)
-        X = df_encoded.drop(target_variable, axis=1)
-        y = df_encoded[target_variable]
-        X_trainval, X_test, y_trainval, y_test = train_test_split(
-            X, y, test_size=test_ratio, random_state=random_state)
-        X_train, X_val, y_train, y_val = train_test_split(
-            X_trainval, y_trainval, test_size=0.25, random_state=42)
-        fitter.fit(X_train, y_train)
-        result = permutation_importance(fitter, X_val, y_val, n_jobs=-1, random_state=42)
-        return result, list(X.columns)   # importance result + feature names captured at run time
-
-      # ── chart renderer ─────────────────────────────────────────
-      def perm_importance_plot(imp_result, feature_names, threshold, fitter_name):
-        scores = imp_result.importances_mean
+      # ── chart to PNG bytes → IPython Image (bypasses matplotlib hooks) ────
+      def _render_chart(imp_result, feat_names, threshold, fitter_name):
+        scores     = imp_result.importances_mean
         sorted_idx = scores.argsort()
-        fig, ax = plt.subplots(figsize=(8, max(4, len(feature_names) * 0.35)))
-        colors = ['#d73027' if scores[i] < threshold else '#4575b4' for i in sorted_idx]
-        ax.barh(range(len(sorted_idx)), scores[sorted_idx], color=colors)
-        ax.set_yticks(range(len(sorted_idx)))
-        ax.set_yticklabels([feature_names[i] for i in sorted_idx])
+        n          = len(feat_names)
+        colors     = ['#d73027' if scores[i] < threshold else '#4575b4'
+                      for i in sorted_idx]
+        fig, ax = plt.subplots(figsize=(8, max(4, n * 0.35)))
+        ax.barh(range(n), scores[sorted_idx], color=colors)
+        ax.set_yticks(range(n))
+        ax.set_yticklabels([feat_names[i] for i in sorted_idx], fontsize=9)
         ax.axvline(x=threshold, color='r', linestyle='--', linewidth=1.5,
                    label=f'Threshold = {threshold:.2f}  (red = below)')
         ax.legend(fontsize=9)
         ax.set_title(f'Permutation Importance — {fitter_name}')
         ax.set_xlabel('Mean Importance Score')
         plt.tight_layout()
-        display(fig)   # use display(fig) — more reliable inside Output widgets than plt.show()
+        buf = _io.BytesIO()
+        fig.savefig(buf, format='png', dpi=100, bbox_inches='tight')
         plt.close(fig)
+        buf.seek(0)
+        # display as raw PNG Image — never swallowed by Colab's inline backend
+        output_importance.clear_output(wait=True)
+        with output_importance:
+          display(_IPyImage(data=buf.read()))
 
-      # ── fitter selector (optional re-run) ─────────────────────
-      is_clf = self.task == 'classification'
+      # ── core: compute importance + render chart ────────────────
+      def _run_importance(fitter_name):
+        output_importance.clear_output(wait=True)
+        with output_importance:
+          display(HTML(
+              '<div style="background:rgba(128,128,128,0.08);border:1px solid rgba(128,128,128,0.3);'
+              'border-radius:6px;padding:10px 14px;margin:6px 0">'
+              f'⏳ Computing permutation importance with <b>{fitter_name}</b> …</div>'
+          ))
+        try:
+          df_imp   = self.data.dropna()
+          num_vars = df_imp.select_dtypes(include=['float64', 'int64']).columns
+          cat_vars = df_imp.select_dtypes(include=['object', 'category', 'bool']).columns
+          if num_vars.empty or cat_vars.empty:
+            df_enc = df_imp
+          else:
+            le     = LabelEncoder()
+            df_enc = pd.concat([df_imp[num_vars],
+                                 df_imp[cat_vars].apply(le.fit_transform)], axis=1)
+          X_imp  = df_enc.drop(target_variable, axis=1)
+          y_imp  = df_enc[target_variable]
+          X_tv, X_te, y_tv, y_te = train_test_split(
+              X_imp, y_imp, test_size=test_ratio, random_state=random_state)
+          X_tr, X_vl, y_tr, y_vl = train_test_split(
+              X_tv, y_tv, test_size=0.25, random_state=42)
+          fitter = _get_fitter(fitter_name)
+          fitter.fit(X_tr, y_tr)
+          result = permutation_importance(
+              fitter, X_vl, y_vl, n_repeats=5, n_jobs=1, random_state=42)
+          self._importance          = result
+          self._importance_features = list(X_imp.columns)
+          _render_chart(result, list(X_imp.columns),
+                        threshold_importance_slider.value, fitter_name)
+        except Exception:
+          output_importance.clear_output(wait=True)
+          with output_importance:
+            display(HTML(
+                f'<div style="background:rgba(220,53,69,0.12);border:1px solid rgba(220,53,69,0.5);'
+                f'border-radius:6px;padding:10px 14px;margin:6px 0">'
+                f'<b>❌ Feature importance computation failed:</b>'
+                f'<pre style="margin:6px 0;font-size:11px;white-space:pre-wrap">'
+                f'{_tb.format_exc()}</pre></div>'
+            ))
+
+      # ── widget controls ────────────────────────────────────────
+      is_clf      = self.task == 'classification'
       fitter_opts = ['random forest', 'gradient boosting machine']
       if is_clf:
         fitter_opts.append('logistic regression')
+
       fitter_dropdown = widgets.Dropdown(
           options=fitter_opts, value='random forest',
-          description='Re-run with:', style={'description_width': 'initial'})
-      fitter_confirm_button = widgets.Button(description='Re-run',
-                                              button_style='primary',
-                                              layout=widgets.Layout(width='100px'))
+          description='Model:', style={'description_width': 'initial'})
+      fitter_confirm_button = widgets.Button(
+          description='Re-run', button_style='primary',
+          layout=widgets.Layout(width='100px'))
 
-      # ── threshold controls ─────────────────────────────────────
       threshold_importance_slider = widgets.FloatSlider(
           value=0.1, min=0, max=1, step=0.01,
           description='Threshold:', style={'description_width': 'initial'})
@@ -1263,9 +1301,14 @@ class ValidationFramework:
                                        layout=widgets.Layout(width='40px'))
       increase_button = widgets.Button(description='+', button_style='primary',
                                        layout=widgets.Layout(width='40px'))
-      update_chart_button = widgets.Button(description='Update Chart', button_style='info',
-                                            layout=widgets.Layout(width='120px'))
+      update_chart_button = widgets.Button(
+          description='Update Chart', button_style='info',
+          layout=widgets.Layout(width='120px'))
 
+      feature_remove_button = widgets.Button(
+          description='Remove Features', button_style='success')
+      feature_revert_button = widgets.Button(
+          description='Revert', icon='reply', button_style='warning')
 
       def increase_slider_value(b):
         threshold_importance_slider.value = min(1.0, threshold_importance_slider.value + 0.01)
@@ -1274,12 +1317,7 @@ class ValidationFramework:
       increase_button.on_click(increase_slider_value)
       decrease_button.on_click(decrease_slider_value)
 
-      # ── remove / revert controls ───────────────────────────────
-      feature_remove_button = widgets.Button(description='Remove Features', button_style='success')
-      feature_revert_button = widgets.Button(description='Revert', icon='reply', button_style='warning')
-      importance_status_out = widgets.Output()
-
-      # ── display layout (widgets first, chart area below) ───────
+      # ── layout ─────────────────────────────────────────────────
       threshold_slider_box = widgets.HBox(
           [decrease_button, threshold_importance_slider, increase_button],
           layout=widgets.Layout(align_items='center'))
@@ -1290,33 +1328,6 @@ class ValidationFramework:
       ]))
       display(importance_status_out)
       display(output_importance)
-
-      # ── core compute + render ──────────────────────────────────
-      def _run_importance(fitter_name):
-        output_importance.clear_output(wait=True)
-        with output_importance:
-          display(HTML(
-              '<div style="background:rgba(128,128,128,0.08);border:1px solid rgba(128,128,128,0.3);'
-              'border-radius:6px;padding:10px 14px;margin:6px 0">'
-              f'⏳ Computing permutation importance with <b>{fitter_name}</b> …</div>'
-          ))
-        try:
-          fitter = _build_fitter(fitter_name)
-          imp_result, feat_names = perm_importance(self.data, fitter)
-          self._importance = imp_result
-          self._importance_features = feat_names
-          output_importance.clear_output(wait=True)
-          with output_importance:
-            perm_importance_plot(imp_result, feat_names,
-                                 threshold_importance_slider.value, fitter_name)
-        except Exception as _err:
-          output_importance.clear_output(wait=True)
-          with output_importance:
-            display(HTML(
-                f'<div style="background:rgba(220,53,69,0.12);border:1px solid rgba(220,53,69,0.5);'
-                f'border-radius:6px;padding:10px 14px;margin:6px 0">'
-                f'❌ Feature importance computation failed: {_err}</div>'
-            ))
 
       # ── button handlers ────────────────────────────────────────
       def on_button_fitter_click(b):
@@ -1329,13 +1340,11 @@ class ValidationFramework:
             display(HTML(
                 '<div style="background:rgba(255,193,7,0.12);border:1px solid rgba(255,193,7,0.5);'
                 'border-radius:6px;padding:10px 14px;margin:6px 0">'
-                '⚠️ No importance data yet — waiting for computation to finish.</div>'
+                '⚠️ No importance data — click <b>Re-run</b> first.</div>'
             ))
           return
-        output_importance.clear_output(wait=True)
-        with output_importance:
-          perm_importance_plot(self._importance, self._importance_features,
-                               threshold_importance_slider.value, fitter_dropdown.value)
+        _render_chart(self._importance, self._importance_features,
+                      threshold_importance_slider.value, fitter_dropdown.value)
 
       def on_button_remove_clicked(b):
         importance_status_out.clear_output(wait=True)
@@ -1344,13 +1353,13 @@ class ValidationFramework:
             display(HTML(
                 '<div style="background:rgba(255,193,7,0.12);border:1px solid rgba(255,193,7,0.5);'
                 'border-radius:6px;padding:10px 14px;margin:6px 0">'
-                '⚠️ Feature importance not yet computed — please wait for auto-run to finish.</div>'
+                '⚠️ Feature importance not yet computed.</div>'
             ))
             return
-          threshold = threshold_importance_slider.value
-          scores = self._importance.importances_mean
+          threshold  = threshold_importance_slider.value
+          scores     = self._importance.importances_mean
           feat_names = self._importance_features
-          live_cols = set(self.data.columns)
+          live_cols  = set(self.data.columns)
           below   = [f for f, s in zip(feat_names, scores) if s < threshold]
           to_drop = [f for f in below if f in live_cols]
           already = [f for f in below if f not in live_cols]
@@ -1370,7 +1379,7 @@ class ValidationFramework:
             display(HTML(
                 f'<div style="background:rgba(66,133,244,0.12);border:1px solid rgba(66,133,244,0.5);'
                 f'border-radius:6px;padding:10px 14px;margin:6px 0">'
-                f'ℹ️ <b>{len(already)} feature(s)</b> below threshold but already removed in a prior step:'
+                f'ℹ️ <b>{len(already)} feature(s)</b> already removed in a prior step:'
                 f'<ul style="margin:4px 0 0 16px">{items2}</ul></div>'
             ))
           if not to_drop and not already:
@@ -1413,10 +1422,8 @@ class ValidationFramework:
       feature_remove_button.on_click(on_button_remove_clicked)
       feature_revert_button.on_click(on_button_revert_clicked)
 
-    # ── auto-run OUTSIDE the with-block to avoid double-nested Output context ──
-    # (calling plt/display inside two nested Output contexts can silently drop output
-    #  in some Colab environments; running outside ensures a single context level)
-    _run_importance('random forest')
+      # ── auto-run with Random Forest on tab load ────────────────
+      _run_importance('random forest')
 
   def model_training(self):
     df = self.data
