@@ -1177,45 +1177,17 @@ class ValidationFramework:
       display(sp_action_out)
 
 ######################### TAB #################################
-    # Feature Importance — uses clear-and-rebuild pattern (same as Pearson/Spearman)
-    # + print() debug to Colab stdout (always visible regardless of widget context).
+    # Feature Importance — clear-and-rebuild pattern
     import io as _io, traceback as _tb, base64 as _b64
-
-    # ── STEP 0: visible debug banner in cell output ──────────────
-    display(HTML(
-        '<div style="background:#fff3cd;border:2px solid #fd7e14;padding:10px;'
-        'border-radius:6px;font-size:14px;margin:4px 0">'
-        '🔶 <b>[FI DEBUG 0]</b> Feature Importance section reached</div>'
-    ))
-    print('[FI] Starting Feature Importance setup…')
 
     importance_tab.clear_output()
     with importance_tab:
-      display(HTML(
-          '<div style="background:#d4edda;border:2px solid #28a745;padding:12px;'
-          'border-radius:6px;font-size:15px">'
-          '✅ <b>[FI DEBUG 0]</b> importance_tab IS rendering — setup starting…</div>'
-      ))
+      display(HTML('<div style="color:#555;font-size:13px">⏳ Initialising…</div>'))
 
     try:
       target_variable = self.target
       test_ratio      = self.test_ratio
       random_state    = self.random
-
-      # ── STEP 1: confirm we entered the try block ──────────────
-      display(HTML(
-          '<div style="background:#cce5ff;border:1px solid #004085;padding:6px;'
-          'border-radius:4px;font-size:13px;margin:2px 0">'
-          '🔷 <b>[FI DEBUG 1]</b> try-block entered, target=<code>'
-          f'{target_variable}</code>, task=<code>{self.task}</code></div>'
-      ))
-      importance_tab.clear_output()
-      with importance_tab:
-        display(HTML(
-            '<div style="background:#cce5ff;border:1px solid #004085;padding:10px;'
-            'border-radius:6px;font-size:14px">'
-            '🔷 <b>[FI DEBUG 1]</b> try-block OK — creating widgets…</div>'
-        ))
 
       # ── task-aware model factory ───────────────────────────────
       def _get_fitter(name):
@@ -1278,34 +1250,11 @@ class ValidationFramework:
           widgets.HBox([threshold_slider_box, update_chart_button]),
           widgets.HBox([feature_remove_button, feature_revert_button]),
       ])
-      print('[FI] Widgets created OK')
 
-      # ── STEP 2: widgets created ───────────────────────────────
-      display(HTML(
-          '<div style="background:#d1ecf1;border:1px solid #0c5460;padding:6px;'
-          'border-radius:4px;font-size:13px;margin:2px 0">'
-          '🔹 <b>[FI DEBUG 2]</b> Widgets created OK</div>'
-      ))
-      importance_tab.clear_output()
-      with importance_tab:
-        display(HTML(
-            '<div style="background:#d1ecf1;border:1px solid #0c5460;padding:10px;'
-            'border-radius:6px;font-size:14px">'
-            '🔹 <b>[FI DEBUG 2]</b> Widgets OK — defining helpers…</div>'
-        ))
-
-      # ── tab rebuild helper (clear-and-rebuild — proven pattern) ──
-      # status_html / chart_html are plain HTML strings embedded directly;
-      # no widget trait update or nested Output context needed.
+      # ── tab rebuild helper ─────────────────────────────────────
       def _show_in_tab(status_html='', chart_html=''):
-        print(f'[FI] _show_in_tab: status={bool(status_html)}, chart={bool(chart_html)}')
         importance_tab.clear_output()
         with importance_tab:
-          display(HTML(
-              f'<div style="background:#f8f9fa;border:1px solid #adb5bd;padding:4px;'
-              f'font-size:11px;color:#555">🔍 _show_in_tab called — '
-              f'status={bool(status_html)}, chart={bool(chart_html)}</div>'
-          ))
           display(controls_top)
           if status_html:
             display(HTML(status_html))
@@ -1315,7 +1264,6 @@ class ValidationFramework:
 
       # ── chart render ───────────────────────────────────────────
       def _render_chart(imp_result, feat_names, threshold, fitter_name):
-        print(f'[FI] _render_chart: {fitter_name}, {len(feat_names)} features')
         scores     = imp_result.importances_mean
         sorted_idx = scores.argsort()
         n          = len(feat_names)
@@ -1335,22 +1283,18 @@ class ValidationFramework:
         fig.savefig(buf, format='png', dpi=100, bbox_inches='tight')
         plt.close(fig)
         b64 = _b64.b64encode(buf.getvalue()).decode()
-        print(f'[FI] PNG generated, b64 len={len(b64)}')
         _show_in_tab(chart_html=(
             f'<img src="data:image/png;base64,{b64}" '
             f'style="max-width:100%;display:block;margin-top:8px;"/>'
         ))
-        print('[FI] _show_in_tab done')
 
       # ── core compute ───────────────────────────────────────────
       def _run_importance(fitter_name):
-        print(f'[FI] _run_importance called: {fitter_name}')
         _show_in_tab(status_html=(
             '<div style="background:rgba(128,128,128,0.08);border:1px solid rgba(128,128,128,0.3);'
             'border-radius:6px;padding:10px 14px;margin:6px 0">'
             f'⏳ Computing permutation importance with <b>{fitter_name}</b> …</div>'
         ))
-        print('[FI] _show_in_tab(Computing) done — starting computation')
         try:
           df_imp   = self.data.dropna()
           num_vars = df_imp.select_dtypes(include=['float64', 'int64']).columns
@@ -1369,23 +1313,19 @@ class ValidationFramework:
               X_tv, y_tv, test_size=0.25, random_state=42)
           fitter = _get_fitter(fitter_name)
           fitter.fit(X_tr, y_tr)
-          print('[FI] running permutation_importance…')
           result = permutation_importance(
               fitter, X_vl, y_vl, n_repeats=5, n_jobs=1, random_state=42)
           self._importance          = result
           self._importance_features = list(X_imp.columns)
-          print('[FI] permutation_importance done')
           _render_chart(result, list(X_imp.columns),
                         threshold_importance_slider.value, fitter_name)
         except Exception:
-          tb_str = _tb.format_exc()
-          print(f'[FI] EXCEPTION in _run_importance:\n{tb_str}')
           _show_in_tab(status_html=(
               f'<div style="background:rgba(220,53,69,0.12);border:1px solid rgba(220,53,69,0.5);'
               f'border-radius:6px;padding:10px 14px;margin:6px 0">'
               f'<b>❌ Feature importance computation failed:</b>'
               f'<pre style="margin:6px 0;font-size:11px;white-space:pre-wrap">'
-              f'{tb_str}</pre></div>'
+              f'{_tb.format_exc()}</pre></div>'
           ))
 
       # ── button handlers ────────────────────────────────────────
@@ -1481,24 +1421,10 @@ class ValidationFramework:
       feature_remove_button.on_click(on_button_remove_clicked)
       feature_revert_button.on_click(on_button_revert_clicked)
 
-      # ── STEP 3: about to auto-run ─────────────────────────────
-      display(HTML(
-          '<div style="background:#e2d9f3;border:1px solid #6f42c1;padding:6px;'
-          'border-radius:4px;font-size:13px;margin:2px 0">'
-          '🔸 <b>[FI DEBUG 3]</b> Handlers registered — calling auto-run now…</div>'
-      ))
-      print('[FI] Handlers registered. Auto-running…')
       _run_importance('random forest')
-      print('[FI] Auto-run complete.')
-      display(HTML(
-          '<div style="background:#d4edda;border:1px solid #28a745;padding:6px;'
-          'border-radius:4px;font-size:13px;margin:2px 0">'
-          '✅ <b>[FI DEBUG 4]</b> Auto-run returned without exception</div>'
-      ))
 
     except Exception as _fi_err:
       _tb_str = _tb.format_exc() if '_tb' in dir() else repr(_fi_err)
-      print(f'[FI] SETUP/AUTORUN FAILED:\n{_tb_str}')
       importance_tab.clear_output()
       with importance_tab:
         display(HTML(
