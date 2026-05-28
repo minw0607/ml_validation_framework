@@ -1476,6 +1476,7 @@ class ValidationFramework:
         'reg_alpha': 0.0,
         'reg_lambda': 0.0,
         'random_state': 42,
+        'verbosity': -1,   # suppress LightGBM info/warning logs
     }
     params_xgb = {
         'n_estimators': 100,
