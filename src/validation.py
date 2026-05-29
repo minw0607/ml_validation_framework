@@ -2212,28 +2212,32 @@ class ValidationFramework:
         description='Feature 2:'
     )
 
-    # Create the two interactive plots
-    single_feature_plot = widgets.interactive(plot_single_feature_pdp, feature_name=single_feature_dropdown)
-    pair_feature_plot = widgets.interactive(plot_pair_features_pdp, feature_name1=pair_feature_dropdown1, feature_name2=pair_feature_dropdown2)
-
-    # Fix equal widths and top-alignment for side-by-side layout
-    half_width_layout = widgets.Layout(width='50%', align_items='flex-start')
-    single_feature_plot.layout = widgets.Layout(width='100%')
-    pair_feature_plot.layout   = widgets.Layout(width='100%')
+    # Use interactive_output so controls and plot area are separate,
+    # letting us insert an invisible spacer on the One-Way side to
+    # match the extra dropdown height on the Two-Way side.
+    from ipywidgets import interactive_output as _iout
+    pdp_out1 = _iout(plot_single_feature_pdp,
+                     {'feature_name': single_feature_dropdown})
+    pdp_out2 = _iout(plot_pair_features_pdp,
+                     {'feature_name1': pair_feature_dropdown1,
+                      'feature_name2': pair_feature_dropdown2})
 
     with pdp_tab:
       message1 = widgets.HTML("<h3>One-Way PDP</h3>")
       message2 = widgets.HTML("<h3>Two-Way PDP</h3>")
-      output1 = widgets.VBox([message1, single_feature_plot],
-                             layout=half_width_layout)
-      output2 = widgets.VBox([message2, pair_feature_plot],
-                             layout=half_width_layout)
-
-      hbox = widgets.HBox(
-          [output1, output2],
-          layout=widgets.Layout(width='100%', align_items='flex-start')
-      )
-      display(hbox)
+      # invisible spacer = one Dropdown height so both plot areas line up
+      _spacer_pdp = widgets.HTML(
+          '<div style="visibility:hidden;min-height:36px"></div>')
+      half = widgets.Layout(width='50%')
+      left_col  = widgets.VBox(
+          [message1, single_feature_dropdown, _spacer_pdp, pdp_out1],
+          layout=half)
+      right_col = widgets.VBox(
+          [message2, pair_feature_dropdown1, pair_feature_dropdown2, pdp_out2],
+          layout=half)
+      display(widgets.HBox([left_col, right_col],
+                           layout=widgets.Layout(width='100%',
+                                                 align_items='flex-start')))
 
 
 
@@ -2462,6 +2466,240 @@ class ValidationFramework:
               return metric_functions[metric](y_true, y_pred_labels)
       else:
           return metric_functions[metric](y_true, y_pred)  # regression metric
+
+################# Overfitting ###################
+
+    with overfit_tab:
+      import io as _io_ov, base64 as _b64_ov, traceback as _tb_ov
+      from sklearn.model_selection import learning_curve as _learning_curve
+
+      def _b64img(fig):
+        buf = _io_ov.BytesIO()
+        fig.savefig(buf, format='png', dpi=100, bbox_inches='tight')
+        plt.close(fig)
+        return '<img src="data:image/png;base64,{}" style="max-width:100%;display:block;margin:8px 0"/>'.format(
+            _b64_ov.b64encode(buf.getvalue()).decode())
+
+      try:
+        n_cls_ov = len(np.unique(y_test))
+        is_binary = (task == 'classification' and n_cls_ov == 2)
+
+        # ── helpers ──────────────────────────────────────────────
+        def _get_scores():
+          """Return (metric_names, train_vals, test_vals, higher_is_better)."""
+          if task == 'classification':
+            ytr_cls  = model.predict(X_train)
+            yte_cls  = model.predict(X_test)
+            ytr_prob = model.predict_proba(X_train)
+            yte_prob = model.predict_proba(X_test)
+            tr_acc = accuracy_score(y_train, ytr_cls)
+            te_acc = accuracy_score(y_test,  yte_cls)
+            avg    = 'binary' if is_binary else 'macro'
+            tr_f1  = f1_score(y_train, ytr_cls, average=avg, zero_division=0)
+            te_f1  = f1_score(y_test,  yte_cls, average=avg, zero_division=0)
+            try:
+              if is_binary:
+                tr_auc = roc_auc_score(y_train, ytr_prob[:, 1])
+                te_auc = roc_auc_score(y_test,  yte_prob[:, 1])
+              else:
+                tr_auc = roc_auc_score(y_train, ytr_prob, multi_class='ovr')
+                te_auc = roc_auc_score(y_test,  yte_prob, multi_class='ovr')
+            except Exception:
+              tr_auc = te_auc = float('nan')
+            return (['Accuracy','AUC','F1'],
+                    [tr_acc, tr_auc, tr_f1],
+                    [te_acc, te_auc, te_f1],
+                    [True, True, True])
+          else:
+            ytr = model.predict(X_train)
+            yte = model.predict(X_test)
+            return (['R²','MAE','MSE'],
+                    [r2_score(y_train,ytr), mean_absolute_error(y_train,ytr), mean_squared_error(y_train,ytr)],
+                    [r2_score(y_test, yte), mean_absolute_error(y_test, yte), mean_squared_error(y_test, yte)],
+                    [True, False, False])
+
+        metric_names, train_vals, test_vals, hib = _get_scores()
+
+        # ─────────────────────────────────────────────────────────
+        # TEST 1 — Train-Test Gap (Residual Error Test)
+        # ─────────────────────────────────────────────────────────
+        display(HTML(
+            '<div style="font-size:15px;font-weight:bold;margin:4px 0 2px">'
+            '① Residual Error Test — Train vs Test Performance Gap</div>'
+            '<p style="font-size:13px;color:#555;margin:0 0 6px">A large gap between '
+            'train and test scores indicates overfitting. The model fits the training '
+            'data well but fails to generalise.</p>'
+        ))
+
+        gaps  = [tr - te if h else te - tr
+                 for tr, te, h in zip(train_vals, test_vals, hib)]
+        flags = ['⚠️ Overfit signal' if g > 0.05 else '✅ OK' for g in gaps]
+
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
+        x = np.arange(len(metric_names)); w = 0.35
+        bars_tr = ax1.bar(x - w/2, train_vals, w, label='Train', color='#4575b4', alpha=0.85)
+        bars_te = ax1.bar(x + w/2, test_vals,  w, label='Test',  color='#d73027', alpha=0.85)
+        for b in list(bars_tr) + list(bars_te):
+          v = b.get_height()
+          if not np.isnan(v):
+            ax1.text(b.get_x() + b.get_width()/2, v + 0.005, f'{v:.3f}',
+                     ha='center', va='bottom', fontsize=8)
+        ax1.set_xticks(x); ax1.set_xticklabels(metric_names)
+        ax1.set_ylabel('Score'); ax1.set_title('Train vs Test Performance'); ax1.legend()
+
+        gap_colors = ['#d73027' if g > 0.05 else '#4575b4' for g in gaps]
+        ax2.bar(metric_names, gaps, color=gap_colors, alpha=0.85)
+        ax2.axhline(0.05, color='r', linestyle='--', linewidth=1.5, label='Threshold 0.05')
+        ax2.set_title('Train–Test Gap (positive = overfitting signal)')
+        ax2.set_ylabel('Gap'); ax2.legend(fontsize=9)
+        fig.tight_layout()
+        display(HTML(_b64img(fig)))
+
+        rows_html = ''.join(
+            f'<tr><td style="padding:4px 12px"><b>{m}</b></td>'
+            f'<td style="padding:4px 12px">{tr:.4f}</td>'
+            f'<td style="padding:4px 12px">{te:.4f}</td>'
+            f'<td style="padding:4px 12px">{g:.4f}</td>'
+            f'<td style="padding:4px 12px">{fl}</td></tr>'
+            for m, tr, te, g, fl in zip(metric_names, train_vals, test_vals, gaps, flags)
+        )
+        display(HTML(
+            '<table style="border-collapse:collapse;font-size:13px;margin:6px 0">'
+            '<thead><tr style="border-bottom:2px solid #ccc">'
+            '<th style="padding:4px 12px;text-align:left">Metric</th>'
+            '<th style="padding:4px 12px">Train</th><th style="padding:4px 12px">Test</th>'
+            '<th style="padding:4px 12px">Gap</th><th style="padding:4px 12px">Signal</th>'
+            '</tr></thead><tbody>' + rows_html + '</tbody></table>'
+        ))
+
+        # ─────────────────────────────────────────────────────────
+        # TEST 2 — Learning Curve (Degree of Freedom proxy)
+        # ─────────────────────────────────────────────────────────
+        display(HTML(
+            '<div style="font-size:15px;font-weight:bold;margin:16px 0 2px">'
+            '② Degree of Freedom Test — Learning Curve</div>'
+            '<p style="font-size:13px;color:#555;margin:0 0 6px">Plots model performance '
+            'versus training-set size. A persistently large train-test gap at full size '
+            'signals high effective degrees of freedom (high variance / overfitting). '
+            'Converging curves at low scores indicate underfitting (high bias).</p>'
+        ))
+        try:
+          lc_scoring = 'accuracy' if task == 'classification' else 'r2'
+          tr_sz, tr_sc, cv_sc = _learning_curve(
+              model, X, y, cv=3, scoring=lc_scoring,
+              train_sizes=np.linspace(0.1, 1.0, 6), n_jobs=1)
+          tr_mn, tr_sd = tr_sc.mean(1), tr_sc.std(1)
+          cv_mn, cv_sd = cv_sc.mean(1), cv_sc.std(1)
+
+          fig, ax = plt.subplots(figsize=(8, 4))
+          ax.fill_between(tr_sz, tr_mn - tr_sd, tr_mn + tr_sd, alpha=0.15, color='#4575b4')
+          ax.fill_between(tr_sz, cv_mn - cv_sd, cv_mn + cv_sd, alpha=0.15, color='#d73027')
+          ax.plot(tr_sz, tr_mn, 'o-', color='#4575b4', label='Train score')
+          ax.plot(tr_sz, cv_mn, 'o-', color='#d73027', label='CV score (3-fold)')
+          ax.set_xlabel('Training set size'); ax.set_ylabel(lc_scoring.upper())
+          ax.set_title('Learning Curve — Train vs Cross-Validated Score')
+          ax.legend(loc='best'); fig.tight_layout()
+          display(HTML(_b64img(fig)))
+
+          final_gap = abs(float(tr_mn[-1]) - float(cv_mn[-1]))
+          if final_gap > 0.10:
+            lc_msg = ('⚠️ Large persistent gap at full training size — high effective '
+                      'degrees of freedom (complex model, high variance). Consider '
+                      'regularisation, pruning, or more training data.')
+          elif float(cv_mn[-1]) < 0.60:
+            lc_msg = ('⚠️ Both curves are low and converging — model may be underfitting '
+                      '(high bias / low degrees of freedom). Consider a more complex model '
+                      'or additional features.')
+          else:
+            lc_msg = ('✅ Curves converge with a modest gap — model complexity appears '
+                      'appropriate for this dataset size.')
+          display(HTML(
+              f'<div style="background:rgba(128,128,128,0.07);border:1px solid '
+              f'rgba(128,128,128,0.3);border-radius:6px;padding:10px 14px;font-size:13px">'
+              f'{lc_msg}</div>'
+          ))
+        except Exception:
+          display(HTML(
+              f'<div style="color:#c62828;font-size:13px">⚠️ Learning curve unavailable: '
+              f'<pre style="font-size:11px">{_tb_ov.format_exc()}</pre></div>'
+          ))
+
+        # ─────────────────────────────────────────────────────────
+        # TEST 3 — Robustness Test (Feature Perturbation Sensitivity)
+        # ─────────────────────────────────────────────────────────
+        display(HTML(
+            '<div style="font-size:15px;font-weight:bold;margin:16px 0 2px">'
+            '③ Robustness Test — Feature Perturbation Sensitivity</div>'
+            '<p style="font-size:13px;color:#555;margin:0 0 6px">Gaussian noise '
+            '(σ × 10%) is added to each numerical feature individually. A large '
+            'performance drop flags features the model relies on fragile or spurious '
+            'patterns — a sign of local overfitting.</p>'
+        ))
+        try:
+          num_cols = X_test.select_dtypes(include=['number']).columns.tolist()
+          base_score = train_vals[0]   # Accuracy or R² on TEST set
+          base_metric = metric_names[0]
+          # recompute base on test set
+          if task == 'classification':
+            base_score = accuracy_score(y_test, model.predict(X_test))
+          else:
+            base_score = r2_score(y_test, model.predict(X_test))
+
+          np.random.seed(42)
+          drops = {}
+          for col in num_cols:
+            Xp = X_test.copy()
+            std = float(Xp[col].std()) or 1.0
+            Xp[col] = Xp[col] + np.random.normal(0, 0.10 * std, len(Xp))
+            if task == 'classification':
+              pert_score = accuracy_score(y_test, model.predict(Xp))
+            else:
+              pert_score = r2_score(y_test, model.predict(Xp))
+            drops[col] = base_score - pert_score
+
+          sorted_items = sorted(drops.items(), key=lambda kv: kv[1], reverse=True)
+          feat_sorted  = [k for k, _ in sorted_items]
+          drop_sorted  = [v for _, v in sorted_items]
+
+          fig, ax = plt.subplots(figsize=(8, max(4, len(feat_sorted) * 0.45)))
+          colors_rb = ['#d73027' if d > 0.02 else '#4575b4' for d in drop_sorted]
+          ax.barh(feat_sorted, drop_sorted, color=colors_rb, alpha=0.85)
+          ax.axvline(0.02, color='r', linestyle='--', linewidth=1.5,
+                     label='Sensitivity threshold (Δ = 0.02)')
+          ax.set_xlabel(f'{base_metric} drop after perturbation (10% noise)')
+          ax.set_title(f'Feature Perturbation Sensitivity — {base_metric}')
+          ax.legend(fontsize=9); fig.tight_layout()
+          display(HTML(_b64img(fig)))
+
+          sensitive = [f for f, d in sorted_items if d > 0.02]
+          if sensitive:
+            flist = ', '.join(f'<code>{f}</code>' for f in sensitive)
+            display(HTML(
+                f'<div style="background:rgba(220,53,69,0.07);border:1px solid '
+                f'rgba(220,53,69,0.4);border-radius:6px;padding:10px 14px;font-size:13px">'
+                f'⚠️ High-sensitivity features (Δ > 0.02): {flist}. '
+                f'The model may be overfitting to these features — consider regularisation '
+                f'or examining their relationship with the target.</div>'
+            ))
+          else:
+            display(HTML(
+                '<div style="background:rgba(52,168,83,0.07);border:1px solid '
+                'rgba(52,168,83,0.4);border-radius:6px;padding:10px 14px;font-size:13px">'
+                '✅ No features show high perturbation sensitivity — model is robust to '
+                'small input noise on all numerical features.</div>'
+            ))
+        except Exception:
+          display(HTML(
+              f'<div style="color:#c62828;font-size:13px">⚠️ Robustness test unavailable: '
+              f'<pre style="font-size:11px">{_tb_ov.format_exc()}</pre></div>'
+          ))
+
+      except Exception:
+        display(HTML(
+            f'<div style="background:rgba(220,53,69,0.1);padding:12px;border-radius:6px">'
+            f'<b>❌ Overfitting analysis error:</b>'
+            f'<pre style="font-size:11px;white-space:pre-wrap">{_tb_ov.format_exc()}</pre></div>'
+        ))
 
 ################# Accuracy ###################
 
@@ -3505,9 +3743,13 @@ class ValidationFramework:
 
     message11 = widgets.HTML(value="<h3>One-Way Weak Spots</h3>")
     message12 = widgets.HTML(value="<h3>Two-Way Weak Spots</h3>")
+    # Invisible spacer to compensate for the extra Feature-2 dropdown on the right
+    _spacer_ws = widgets.HTML('<div style="visibility:hidden;min-height:36px"></div>')
     with weakspot_tab:
-      # Display widgets
-      display(HBox([VBox([message11,one_way_interact]), VBox([message12, two_way_interact])]))
+      display(HBox([
+          VBox([message11, feature_one_way_widget, _spacer_ws, one_way_interact]),
+          VBox([message12, feature1_widget, feature2_widget,   two_way_interact])
+      ]))
 
 
 ################### Robustness #########################
