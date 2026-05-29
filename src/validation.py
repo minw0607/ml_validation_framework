@@ -3732,24 +3732,26 @@ class ValidationFramework:
         disabled=False,
     )
 
-    # Create interactive widgets
-    one_way_interact = interactive(plot_one_way_segments_and_weak_spots_heatmap,
-                                  feature1=feature_one_way_widget)
-    #one_way_interact.manual = True
-
-    two_way_interact = interactive(plot_segments_and_weak_spots_heatmap,
-                                  feature1=feature1_widget, feature2=feature2_widget)
-    #two_way_interact.manual = True
+    # Create interactive output widgets (output only — controls are placed separately
+    # so that each dropdown appears exactly once and columns stay aligned)
+    from ipywidgets import interactive_output as _iout_ws
+    one_way_out = _iout_ws(plot_one_way_segments_and_weak_spots_heatmap,
+                           {'feature1': feature_one_way_widget})
+    two_way_out = _iout_ws(plot_segments_and_weak_spots_heatmap,
+                           {'feature1': feature1_widget, 'feature2': feature2_widget})
 
     message11 = widgets.HTML(value="<h3>One-Way Weak Spots</h3>")
     message12 = widgets.HTML(value="<h3>Two-Way Weak Spots</h3>")
-    # Invisible spacer to compensate for the extra Feature-2 dropdown on the right
+    # Invisible spacer so One-Way plot top aligns with Two-Way plot top
+    # (Two-Way has 2 dropdowns; One-Way has 1 — the spacer fills the gap)
     _spacer_ws = widgets.HTML('<div style="visibility:hidden;min-height:36px"></div>')
     with weakspot_tab:
       display(HBox([
-          VBox([message11, feature_one_way_widget, _spacer_ws, one_way_interact]),
-          VBox([message12, feature1_widget, feature2_widget,   two_way_interact])
-      ]))
+          VBox([message11, feature_one_way_widget, _spacer_ws, one_way_out],
+               layout=widgets.Layout(width='50%')),
+          VBox([message12, feature1_widget, feature2_widget,   two_way_out],
+               layout=widgets.Layout(width='50%'))
+      ], layout=widgets.Layout(width='100%', align_items='flex-start')))
 
 
 ################### Robustness #########################
